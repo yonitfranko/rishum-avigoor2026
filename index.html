@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מערכת רישום – בית ספר אביגור</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1e3a5f;--blue2:#2d5a8e;--gold:#c9a227;--gold2:#f0c94d;
+  --bg:#f2f5f9;--card:#fff;--text:#1a2332;--muted:#5a6a7e;
+  --border:#dde4ef;--ok:#2e7d32;--err:#c62828;--warn:#e65100;
+}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ─── HEADER ─── */
+.hdr{background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);color:#fff;
+  padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 14px rgba(0,0,0,.2);position:sticky;top:0;z-index:50}
+.hdr-left h1{font-size:1.15rem;font-weight:800}
+.hdr-left p{font-size:.78rem;opacity:.75;margin-top:2px}
+.hdr-logo{width:46px;height:46px;border-radius:50%;background:var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  font-weight:800;color:var(--blue);flex-shrink:0}
+
+/* ─── SCREENS ─── */
+.screen{display:none}.screen.active{display:block}
+
+/* ─── LANDING ─── */
+.land{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:calc(100vh - 74px);padding:40px 16px;text-align:center}
+.land h2{font-size:2rem;font-weight:800;color:var(--blue);margin-bottom:6px}
+.land p{color:var(--muted);margin-bottom:48px}
+.land-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.lcard{background:#fff;border-radius:18px;padding:36px 28px;cursor:pointer;
+  transition:.2s;box-shadow:0 4px 20px rgba(0,0,0,.08);border:2px solid transparent;width:210px}
+.lcard:hover{border-color:var(--gold);transform:translateY(-5px);box-shadow:0 10px 32px rgba(0,0,0,.13)}
+.lcard .ico{font-size:2.8rem;margin-bottom:14px}
+.lcard h3{font-size:1.1rem;font-weight:700;color:var(--blue);margin-bottom:6px}
+.lcard p{font-size:.82rem;color:var(--muted)}
+
+/* ─── FORM WRAP ─── */
+.fw{max-width:780px;margin:0 auto;padding:24px 14px}
+
+/* ─── STEPPER ─── */
+.stepper{display:flex;align-items:flex-start;margin-bottom:28px;overflow-x:auto;padding-bottom:6px;gap:0}
+.stp{display:flex;flex-direction:column;align-items:center;flex:1;min-width:54px;position:relative}
+.stp:not(:last-child)::after{content:'';position:absolute;top:15px;left:0;width:100%;
+  height:2px;background:var(--border);z-index:0}
+.stp.done:not(:last-child)::after,.stp.active:not(:last-child)::after{background:var(--gold)}
+.stp-n{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);background:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;
+  color:var(--muted);position:relative;z-index:1}
+.stp.active .stp-n{border-color:var(--blue);background:var(--blue);color:#fff}
+.stp.done .stp-n{border-color:var(--gold);background:var(--gold);color:var(--blue)}
+.stp-lbl{font-size:.65rem;color:var(--muted);margin-top:5px;text-align:center;white-space:nowrap}
+.stp.active .stp-lbl{color:var(--blue);font-weight:700}
+
+/* ─── FORM CARD ─── */
+.fc{background:#fff;border-radius:16px;padding:30px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+.fc h2{font-size:1.25rem;font-weight:800;color:var(--blue);margin-bottom:3px}
+.fc .sdesc{font-size:.82rem;color:var(--muted);margin-bottom:20px;padding-bottom:16px;
+  border-bottom:1px solid var(--border)}
+
+/* ─── GRID ─── */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.row.one{grid-template-columns:1fr}
+.row.three{grid-template-columns:1fr 1fr 1fr}
+.ff{display:flex;flex-direction:column}
+.ff label{font-size:.78rem;font-weight:700;color:var(--blue);margin-bottom:5px}
+.ff label .req{color:var(--err);margin-right:2px}
+.ff input,.ff select,.ff textarea{border:1.5px solid var(--border);border-radius:8px;
+  padding:9px 11px;font-size:.88rem;font-family:'Heebo',sans-serif;color:var(--text);
+  transition:border-color .15s;background:#fafbfc}
+.ff input:focus,.ff select:focus,.ff textarea:focus{outline:none;border-color:var(--blue);background:#fff}
+.ff textarea{resize:vertical;min-height:76px}
+.ff .hint{font-size:.72rem;color:var(--muted);margin-top:3px}
+
+.sec{font-size:.92rem;font-weight:700;color:var(--blue2);margin:22px 0 14px;
+  padding-bottom:7px;border-bottom:2px solid var(--gold)}
+
+/* ─── BUTTONS ─── */
+.btn{padding:10px 24px;border-radius:9px;border:none;cursor:pointer;
+  font-family:'Heebo',sans-serif;font-size:.88rem;font-weight:600;
+  transition:.15s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue2)}
+.btn-gold{background:var(--gold);color:var(--blue)}.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-outline:hover{background:var(--blue);color:#fff}
+.btn-danger{background:var(--err);color:#fff}
+.btn-sm{padding:6px 14px;font-size:.78rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.fn{display:flex;justify-content:space-between;align-items:center;
+  margin-top:28px;padding-top:18px;border-top:1px solid var(--border)}
+
+/* ─── ALERTS ─── */
+.al{padding:11px 15px;border-radius:8px;font-size:.84rem;margin-bottom:14px}
+.al-ok{background:#e8f5e9;color:var(--ok);border:1px solid #a5d6a7}
+.al-err{background:#ffebee;color:var(--err);border:1px solid #ef9a9a}
+.al-info{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9}
+.al-warn{background:#fff3e0;color:var(--warn);border:1px solid #ffcc80}
+
+/* ─── MODAL ─── */
+.moverlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.mdl{background:#fff;border-radius:16px;padding:30px;max-width:520px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.mdl h3{font-size:1.1rem;font-weight:700;color:var(--blue);margin-bottom:14px}
+.mdl input{width:100%;border:1.5px solid var(--border);border-radius:8px;
+  padding:11px;font-family:'Heebo',sans-serif;font-size:.95rem;margin-bottom:14px}
+
+/* ─── ADMIN ─── */
+.aw{max-width:1120px;margin:0 auto;padding:24px 14px}
+.atop{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px}
+.atop h2{font-size:1.4rem;font-weight:800;color:var(--blue)}
+.stats{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.stat{background:#fff;border-radius:12px;padding:14px 18px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);flex:1;min-width:110px}
+.stat .num{font-size:1.8rem;font-weight:800;color:var(--blue)}
+.stat .lbl{font-size:.75rem;color:var(--muted);margin-top:2px}
+.filters{background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.filters input{flex:1;min-width:200px;border:1.5px solid var(--border);border-radius:8px;
+  padding:8px 12px;font-family:'Heebo',sans-serif;font-size:.88rem}
+.filters select{border:1.5px solid var(--border);border-radius:8px;
+  padding:8px 12px;font-family:'Heebo',sans-serif;font-size:.88rem}
+.tbl{background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:auto}
+.tbl table{width:100%;border-collapse:collapse;min-width:700px}
+.tbl th{background:var(--blue);color:#fff;padding:11px 14px;text-align:right;
+  font-size:.8rem;font-weight:600;white-space:nowrap}
+.tbl td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.83rem}
+.tbl tr:hover td{background:#f0f4f8}
+.tbl tr:last-child td{border-bottom:none}
+
+/* ─── BADGE ─── */
+.bdg{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.b-new{background:#f3e5f5;color:#6a1b9a}
+.b-wait{background:#fff3e0;color:#e65100}
+.b-int{background:#e3f2fd;color:#1565c0}
+.b-acc{background:#e8f5e9;color:#2e7d32}
+.b-rej{background:#ffebee;color:#c62828}
+
+/* ─── DETAIL ─── */
+.dpanel{background:#fff;border-radius:16px;padding:30px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+.dsec{margin-bottom:22px}
+.dsec h4{font-size:.82rem;font-weight:700;color:var(--gold);text-transform:uppercase;
+  letter-spacing:.6px;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.di label{font-size:.7rem;color:var(--muted);display:block;margin-bottom:1px}
+.di span{font-size:.87rem;font-weight:500;color:var(--text)}
+.ivbox{background:#f6f8ff;border:1.5px solid var(--border);border-radius:10px;padding:16px;margin-top:16px}
+.ivbox h4{font-size:.9rem;font-weight:700;color:var(--blue);margin-bottom:12px}
+.ivbox textarea{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px;
+  font-family:'Heebo',sans-serif;font-size:.87rem;resize:vertical;min-height:88px}
+
+/* ─── STUDENT CARD ─── */
+.scard{border:3px solid var(--blue);border-radius:16px;padding:22px;background:#fff;font-family:'Heebo',sans-serif}
+.scard-hdr{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;
+  border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
+.savatar{width:56px;height:56px;border-radius:50%;background:var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  font-weight:800;color:var(--blue);flex-shrink:0}
+.scard-body{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.83rem}
+.scard-fi label{font-size:.68rem;color:#999;display:block;margin-bottom:1px}
+.scard-note{margin-top:10px;padding:8px 11px;border-radius:7px;font-size:.78rem}
+.scard-med{background:#fff3e0}.scard-int{background:#e3f2fd}
+
+/* ─── LOADING ─── */
+.loading{text-align:center;padding:48px;color:var(--muted)}
+.spin{display:inline-block;width:30px;height:30px;border:3px solid var(--border);
+  border-top-color:var(--blue);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media(max-width:600px){
+  .row{grid-template-columns:1fr}
+  .row.three{grid-template-columns:1fr 1fr}
+  .land-cards{flex-direction:column}
+  .lcard{width:100%}
+}
+@media print{
+  body *{visibility:hidden}
+  #pcard,#pcard *{visibility:visible}
+  #pcard{position:fixed;top:0;left:0;width:100%;padding:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>🏫 מערכת רישום – בית ספר אביגור</h1>
+    <p>פורטל רישום תלמידים חדשים</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div id="hdrNav"></div>
+    <div class="hdr-logo">א</div>
+  </div>
+</div>
+
+<!-- ═══ LANDING ═══ -->
+<div id="scrLanding" class="screen active">
+  <div class="land">
+    <h2>ברוכים הבאים לפורטל הרישום</h2>
+    <p>לשנת הלימודים תשפ"ו – אנא בחרו את סוג המשתמש</p>
+    <div class="land-cards">
+      <div class="lcard" onclick="startParent()">
+        <div class="ico">👨‍👩‍👧</div>
+        <h3>הורה</h3>
+        <p>מילוי טופס רישום לתלמיד/ה חדש/ה</p>
+      </div>
+      <div class="lcard" onclick="showAdminLogin()">
+        <div class="ico">🔐</div>
+        <h3>צוות בית ספר</h3>
+        <p>ניהול רישומים, ראיונות וצפייה בפרטים</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PARENT FORM ═══ -->
+<div id="scrParent" class="screen">
+  <div class="fw">
+    <div class="stepper" id="stepper"></div>
+    <div class="fc" id="formCard"></div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN ═══ -->
+<div id="scrAdmin" class="screen">
+  <div class="aw" id="adminContent"></div>
+</div>
+
+<!-- ═══ ADMIN LOGIN MODAL ═══ -->
+<div id="modLogin" class="moverlay" style="display:none">
+  <div class="mdl">
+    <h3>🔐 כניסת צוות בית הספר</h3>
+    <div id="loginMsg"></div>
+    <input type="password" id="pwdInput" placeholder="סיסמת כניסה"
+      onkeypress="if(event.key==='Enter')doLogin()">
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal('modLogin')">ביטול</button>
+      <button class="btn btn-primary" onclick="doLogin()">כניסה →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STUDENT CARD MODAL ═══ -->
+<div id="modCard" class="moverlay" style="display:none">
+  <div class="mdl" style="max-width:560px">
+    <div id="pcard"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-outline" onclick="closeModal('modCard')">סגור</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ הדפסה</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  FIREBASE
+// ══════════════════════════════════════════════════════
+const FB_CFG = {
+  apiKey:"AIzaSyBCYhOkXVc1a5Y0g2uXrGDnbhQpLIExzGU",
+  authDomain:"rishum---avigoor.firebaseapp.com",
+  projectId:"rishum---avigoor",
+  storageBucket:"rishum---avigoor.firebasestorage.app",
+  messagingSenderId:"345182342365",
+  appId:"1:345182342365:web:403d679353db9534aa5f34",
+  databaseURL:"https://rishum---avigoor-default-rtdb.europe-west1.firebasedatabase.app"
+};
+firebase.initializeApp(FB_CFG);
+const db = firebase.database();
+
+var ADMIN_PWD = 'avigoor2025';   // ← ניתן לשנות
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+var fd = {};
+var step = 0;
+var editId = null;
+var allRegs = [];
+
+const STEPS = [
+  {l:'פרטי תלמיד'},
+  {l:'הורה א׳'},
+  {l:'הורה ב׳'},
+  {l:'כתובת'},
+  {l:'בריאות'},
+  {l:'נוסף'},
+  {l:'אישור'},
+];
+
+// ══════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════
+function showScr(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).style.display='none'}
+function openModal(id){document.getElementById(id).style.display='flex'}
+
+function startParent(){
+  fd={};step=0;
+  showScr('scrParent');
+  setNav('parent');
+  renderStepper();renderStep();
+}
+function showAdminLogin(){openModal('modLogin');document.getElementById('pwdInput').value='';document.getElementById('loginMsg').innerHTML=''}
+function doLogin(){
+  if(document.getElementById('pwdInput').value===ADMIN_PWD){
+    closeModal('modLogin');showScr('scrAdmin');setNav('admin');loadDashboard();
+  }else{document.getElementById('loginMsg').innerHTML='<div class="al al-err">סיסמה שגויה</div>'}
+}
+function setNav(role){
+  document.getElementById('hdrNav').innerHTML=
+    `<button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.45);font-size:.82rem" onclick="goHome()">🏠 בית</button>`;
+}
+function goHome(){showScr('scrLanding');document.getElementById('hdrNav').innerHTML=''}
+
+// ══════════════════════════════════════════════════════
+//  STEPPER
+// ══════════════════════════════════════════════════════
+function renderStepper(){
+  document.getElementById('stepper').innerHTML=STEPS.map((s,i)=>`
+    <div class="stp ${i<step?'done':''} ${i===step?'active':''}">
+      <div class="stp-n">${i<step?'✓':i+1}</div>
+      <div class="stp-lbl">${s.l}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
+//  FORM STEPS
+// ══════════════════════════════════════════════════════
+function renderStep(){
+  const c=document.getElementById('formCard');
+  c.innerHTML=[s0,s1,s2,s3,s4,s5,s6][step]();
+  restore();
+  window.scrollTo(0,0);
+}
+
+function save(){
+  document.querySelectorAll('#formCard input,#formCard select,#formCard textarea').forEach(el=>{
+    if(!el.name)return;
+    if(el.type==='checkbox')fd[el.name]=el.checked;
+    else if(el.type==='radio'){if(el.checked)fd[el.name]=el.value;}
+    else fd[el.name]=el.value;
+  });
+}
+function restore(){
+  document.querySelectorAll('#formCard input,#formCard select,#formCard textarea').forEach(el=>{
+    if(!el.name||fd[el.name]===undefined)return;
+    if(el.type==='checkbox')el.checked=fd[el.name];
+    else if(el.type==='radio')el.checked=fd[el.name]===el.value;
+    else el.value=fd[el.name];
+  });
+}
+function next(){save();if(step<STEPS.length-1){step++;renderStepper();renderStep()}}
+function prev(){save();if(step>0){step--;renderStepper();renderStep()}}
+
+function navBtns(){
+  return `<div class="fn">
+    <button class="btn btn-outline" onclick="${step>0?'prev()':'goHome()'}">← ${step>0?'חזור':'בית'}</button>
+    ${step<STEPS.length-1?`<button class="btn btn-primary" onclick="next()">המשך ←</button>`:''}
+  </div>`;
+}
+
+// ─── STEP 0: STUDENT ───
+function s0(){return `
+  <h2>👤 ${STEPS[0].l}</h2>
+  <p class="sdesc">פרטים אישיים של התלמיד/ה</p>
+  <div class="row">
+    <div class="ff"><label>שם פרטי <span class="req">*</span></label><input name="stFN" placeholder="שם פרטי"></div>
+    <div class="ff"><label>שם משפחה <span class="req">*</span></label><input name="stLN" placeholder="שם משפחה"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>מספר ת"ז <span class="req">*</span></label><input name="stId" placeholder="9 ספרות" maxlength="9"></div>
+    <div class="ff"><label>תאריך לידה <span class="req">*</span></label><input type="date" name="stBirth"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>מין</label>
+      <select name="stGender"><option value="">בחר/י</option><option>זכר</option><option>נקבה</option></select></div>
+    <div class="ff"><label>כיתה מבוקשת <span class="req">*</span></label>
+      <select name="stGrade"><option value="">בחר/י</option>${['א','ב','ג','ד','ה','ו','ז','ח','ט','י','יא','יב'].map(g=>`<option value="${g}">כיתה ${g}</option>`).join('')}</select></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>עיר לידה</label><input name="stBCity" placeholder="עיר לידה"></div>
+    <div class="ff"><label>ארץ לידה</label><input name="stBCountry" placeholder="ארץ לידה" value="ישראל"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>שפת אם</label><input name="stLang" placeholder="עברית, ערבית, רוסית..."></div>
+    <div class="ff"><label>דת</label>
+      <select name="stRel"><option value="">בחר/י</option><option>יהודי/ה</option><option>מוסלמי/ת</option><option>נוצרי/ת</option><option>דרוזי/ת</option><option>אחר</option></select></div>
+  </div>
+  <div class="sec">📚 לימודים קודמים</div>
+  <div class="row">
+    <div class="ff"><label>בית ספר קודם</label><input name="prevSchool" placeholder="שם בית הספר הקודם"></div>
+    <div class="ff"><label>כיתה אחרונה</label>
+      <select name="prevGrade"><option value="">בחר/י</option>${['א','ב','ג','ד','ה','ו','ז','ח','ט','י','יא','יב'].map(g=>`<option value="${g}">כיתה ${g}</option>`).join('')}</select></div>
+  </div>
+  <div class="row one">
+    <div class="ff"><label>סיבת המעבר</label><textarea name="transReason" placeholder="מדוע עוברים לבית הספר שלנו?"></textarea></div>
+  </div>
+  ${navBtns()}`}
+
+// ─── STEP 1: PARENT A ───
+function s1(){return `
+  <h2>👨 ${STEPS[1].l}</h2>
+  <p class="sdesc">פרטי ההורה / אפוטרופוס הראשי</p>
+  <div class="row">
+    <div class="ff"><label>שם פרטי <span class="req">*</span></label><input name="p1FN" placeholder="שם פרטי"></div>
+    <div class="ff"><label>שם משפחה <span class="req">*</span></label><input name="p1LN" placeholder="שם משפחה"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>מספר ת"ז</label><input name="p1Id" placeholder="9 ספרות" maxlength="9"></div>
+    <div class="ff"><label>קשר לתלמיד</label>
+      <select name="p1Rel"><option value="אב">אב</option><option value="אם">אם</option><option value="אפוטרופוס">אפוטרופוס</option><option value="אחר">אחר</option></select></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>טלפון נייד <span class="req">*</span></label><input type="tel" name="p1Ph" placeholder="05X-XXXXXXX"></div>
+    <div class="ff"><label>טלפון נוסף</label><input type="tel" name="p1Ph2" placeholder="טלפון נוסף"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>דוא"ל <span class="req">*</span></label><input type="email" name="p1Email" placeholder="example@email.com"></div>
+    <div class="ff"><label>עיסוק</label><input name="p1Job" placeholder="מקצוע / עיסוק"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>מקום עבודה</label><input name="p1Work" placeholder="שם מקום העבודה"></div>
+    <div class="ff"><label>השכלה</label>
+      <select name="p1Edu"><option value="">בחר/י</option><option>תיכון</option><option>תואר ראשון</option><option>תואר שני</option><option>תואר שלישי</option></select></div>
+  </div>
+  ${navBtns()}`}
+
+// ─── STEP 2: PARENT B ───
+function s2(){return `
+  <h2>👩 ${STEPS[2].l}</h2>
+  <p class="sdesc">פרטי הורה / אפוטרופוס שני (אם רלוונטי)</p>
+  <div class="row one">
+    <div class="ff"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400">
+      <input type="checkbox" name="noP2" onchange="toggleP2(this)" style="width:auto">
+      <span style="font-weight:700">אין הורה שני / לא רלוונטי</span></label></div>
+  </div>
+  <div id="p2Fields">
+  <div class="row">
+    <div class="ff"><label>שם פרטי</label><input name="p2FN" placeholder="שם פרטי"></div>
+    <div class="ff"><label>שם משפחה</label><input name="p2LN" placeholder="שם משפחה"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>מספר ת"ז</label><input name="p2Id" placeholder="9 ספרות" maxlength="9"></div>
+    <div class="ff"><label>קשר לתלמיד</label>
+      <select name="p2Rel"><option value="אב">אב</option><option value="אם">אם</option><option value="אפוטרופוס">אפוטרופוס</option><option value="אחר">אחר</option></select></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>טלפון נייד</label><input type="tel" name="p2Ph" placeholder="05X-XXXXXXX"></div>
+    <div class="ff"><label>דוא"ל</label><input type="email" name="p2Email" placeholder="example@email.com"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>עיסוק</label><input name="p2Job" placeholder="מקצוע / עיסוק"></div>
+    <div class="ff"><label>מקום עבודה</label><input name="p2Work" placeholder="שם מקום העבודה"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>מצב משפחתי</label>
+      <select name="famStatus"><option value="">בחר/י</option><option>נשוי/אה</option><option>גרוש/אה</option><option>רווק/ה</option><option>אלמן/ה</option><option>ידועים בציבור</option></select></div>
+  </div>
+  <div class="row one">
+    <div class="ff"><label>הערות הסדר משפחתי</label>
+      <textarea name="famNotes" placeholder="הסדרי משמורת, גישה להורים, הערות..."></textarea></div>
+  </div>
+  </div>
+  ${navBtns()}`}
+
+function toggleP2(cb){
+  const el=document.getElementById('p2Fields');
+  el.style.opacity=cb.checked?'0.35':'1';el.style.pointerEvents=cb.checked?'none':'';
+}
+
+// ─── STEP 3: ADDRESS ───
+function s3(){return `
+  <h2>🏠 ${STEPS[3].l}</h2>
+  <p class="sdesc">כתובת מגורים ופרטי קשר לחירום</p>
+  <div class="sec">🏠 כתובת מגורים</div>
+  <div class="row">
+    <div class="ff"><label>רחוב <span class="req">*</span></label><input name="street" placeholder="שם הרחוב"></div>
+    <div class="ff"><label>מספר בית <span class="req">*</span></label><input name="houseN" placeholder="מספר"></div>
+  </div>
+  <div class="row three">
+    <div class="ff"><label>דירה</label><input name="apt" placeholder="דירה"></div>
+    <div class="ff"><label>כניסה</label><input name="entrance" placeholder="א׳, ב׳..."></div>
+    <div class="ff"><label>קומה</label><input name="floor" placeholder="קומה"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>עיר <span class="req">*</span></label><input name="city" placeholder="שם העיר"></div>
+    <div class="ff"><label>מיקוד</label><input name="zip" placeholder="מיקוד"></div>
+  </div>
+  <div class="sec">📞 קשר לשעת חירום</div>
+  <div class="row">
+    <div class="ff"><label>שם איש קשר <span class="req">*</span></label><input name="emgName" placeholder="שם מלא"></div>
+    <div class="ff"><label>קשר לתלמיד</label><input name="emgRel" placeholder="סבא, דוד, שכן..."></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>טלפון חירום <span class="req">*</span></label><input type="tel" name="emgPh" placeholder="05X-XXXXXXX"></div>
+    <div class="ff"><label>טלפון חירום נוסף</label><input type="tel" name="emgPh2" placeholder="טלפון נוסף"></div>
+  </div>
+  <div class="sec">🚌 הסעות</div>
+  <div class="row">
+    <div class="ff"><label>האם נדרשת הסעה?</label>
+      <select name="transport"><option value="לא">לא</option><option value="כן">כן</option></select></div>
+    <div class="ff"><label>הערות הסעה</label><input name="transNotes" placeholder="פרטים אם נדרשת הסעה"></div>
+  </div>
+  ${navBtns()}`}
+
+// ─── STEP 4: HEALTH ───
+function s4(){return `
+  <h2>🏥 ${STEPS[4].l}</h2>
+  <p class="sdesc">מידע רפואי – ישמש את צוות בית הספר בלבד</p>
+  <div class="row one">
+    <div class="ff"><label>מחלות רקע / מצבים רפואיים</label>
+      <textarea name="medCond" placeholder="סכרת, אסתמה, אפילפסיה... (אם אין – כתוב 'אין')"></textarea></div>
+  </div>
+  <div class="row one">
+    <div class="ff"><label>תרופות קבועות</label>
+      <textarea name="meds" placeholder="שם תרופה, מינון, שעת נטילה (אם אין – כתוב 'אין')"></textarea></div>
+  </div>
+  <div class="row one">
+    <div class="ff"><label>אלרגיות</label>
+      <textarea name="allergies" placeholder="אלרגיות למזון, תרופות, חיות... (אם אין – כתוב 'אין')"></textarea></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>רופא/ת משפחה</label><input name="famDoc" placeholder="שם הרופא"></div>
+    <div class="ff"><label>טלפון קופת חולים</label><input type="tel" name="docPh" placeholder="טלפון"></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>קופת חולים</label>
+      <select name="hmo"><option value="">בחר/י</option><option>מכבי</option><option>כללית</option><option>מאוחדת</option><option>לאומית</option></select></div>
+    <div class="ff"><label>מספר ביטוח</label><input name="insNum" placeholder="מספר ביטוח"></div>
+  </div>
+  <div class="sec">🧠 צרכים מיוחדים</div>
+  <div class="row one">
+    <div class="ff"><label>אבחונים / קשיי למידה</label>
+      <textarea name="learnDiff" placeholder="ADHD, דיסלקציה, ליקויי שמיעה/ראייה... (אם אין – כתוב 'אין')"></textarea></div>
+  </div>
+  <div class="row">
+    <div class="ff"><label>האם קיים תל"א?</label>
+      <select name="hasIEP"><option value="לא">לא</option><option value="כן">כן</option></select></div>
+    <div class="ff"><label>הערות בריאות נוספות</label><input name="healthNotes" placeholder="מידע נוסף..."></div>
+  </div>
+  ${navBtns()}`}
+
+// ─── STEP 5: ADDITIONAL ───
+function s5(){return `
+  <h2>📋 ${STEPS[5].l}</h2>
+  <p class="sdesc">מידע נוסף ותחומי עניין</p>
+  <div class="row one">
+    <div class="ff"><label>תחביבים ופעילויות פנאי</label>
+      <textarea name="hobbies" placeholder="ספורט, מוסיקה, ציור, קריאה..."></textarea></div>
+  </div>
+  <div class="row one">
+    <div class="ff"><label>חוגים ופעילויות חוץ-בית-ספריות</label>
+      <textarea name="extra" placeholder="כדורגל, שחיה, פסנתר..."></textarea></div>
+  </div>
+  <div class="row one">
+    <div class="ff"><label>תחומי עוצמה של התלמיד/ה</label>
+      <textarea name="strengths" placeholder="במה התלמיד/ה מצטיין/ת?"></textarea></div>
+  </div>
+  <div class="row one">
+    <div class="ff"><label>תחומים הדורשים תמיכה</label>
+      <textarea name="challenges" placeholder="אתגרים לימודיים, חברתיים או רגשיים"></textarea></div>
+  </div>
+  <div class="sec">📋 הצהרות</div>
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+    <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:.88rem">
+      <input type="checkbox" name="cData" style="margin-top:3px;width:auto">
+      <span>אני מאשר/ת את שמירת הנתונים במערכת בית הספר לצרכי ניהול ולימודים בלבד <span class="req">*</span></span></label>
+    <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:.88rem">
+      <input type="checkbox" name="cPhoto" style="margin-top:3px;width:auto">
+      <span>אני מאשר/ת צילום התלמיד/ה לפעילויות בית הספר ופרסום (ניתן לבטל)</span></label>
+    <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:.88rem">
+      <input type="checkbox" name="cTrips" style="margin-top:3px;width:auto">
+      <span>אני מאשר/ת השתתפות בטיולים (כפוף לאישור ספציפי לכל פעילות)</span></label>
+  </div>
+  <div class="row one">
+    <div class="ff"><label>הערות ובקשות מיוחדות</label>
+      <textarea name="addNotes" placeholder="כל מידע נוסף שתרצו לשתף עם הצוות..."></textarea></div>
+  </div>
+  ${navBtns()}`}
+
+// ─── STEP 6: CONFIRM ───
+function s6(){return `
+  <h2>✅ ${STEPS[6].l}</h2>
+  <p class="sdesc">בדקו את הפרטים לפני השליחה</p>
+  <div class="al al-info">📌 לאחר השליחה, הרישום יישמר ואיש צוות יצור עמכם קשר לתיאום ראיון.</div>
+  <div class="dsec">
+    <h4>👤 פרטי תלמיד</h4>
+    <div class="dgrid">
+      ${si('שם מלא',(fd.stFN||'')+' '+(fd.stLN||''))}
+      ${si('ת"ז',fd.stId)}${si('תאריך לידה',fd.stBirth)}
+      ${si('מין',fd.stGender)}${si('כיתה',fd.stGrade)}${si('בי"ס קודם',fd.prevSchool)}
+    </div>
+  </div>
+  <div class="dsec">
+    <h4>👨 הורה א׳</h4>
+    <div class="dgrid">
+      ${si('שם',(fd.p1FN||'')+' '+(fd.p1LN||''))}
+      ${si('טלפון',fd.p1Ph)}${si('דוא"ל',fd.p1Email)}
+    </div>
+  </div>
+  <div class="dsec">
+    <h4>🏠 כתובת</h4>
+    <div class="dgrid">
+      ${si('כתובת',(fd.street||'')+' '+(fd.houseN||'')+', '+(fd.city||''))}
+      ${si('חירום',fd.emgPh)}
+    </div>
+  </div>
+  <div class="fn">
+    <button class="btn btn-outline" onclick="prev()">← חזור</button>
+    <button class="btn btn-gold" id="subBtn" onclick="submitForm()">📤 שלח רישום</button>
+  </div>`}
+
+function si(l,v){return `<div class="di"><label>${l}</label><span>${v||'—'}</span></div>`}
+
+// ══════════════════════════════════════════════════════
+//  SUBMIT
+// ══════════════════════════════════════════════════════
+async function submitForm(){
+  const btn=document.getElementById('subBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div>';
+  save();
+  if(!fd.cData){
+    btn.disabled=false;btn.innerHTML='📤 שלח רישום';
+    document.getElementById('formCard').insertAdjacentHTML('afterbegin',
+      '<div class="al al-err">יש לאשר את שמירת הנתונים לפני שליחה</div>');return;
+  }
+  try{
+    const data={...fd,status:'חדש',ivNotes:'',adminNotes:'',ivDate:'',ivBy:'',
+      createdAt:firebase.database.ServerValue.TIMESTAMP};
+    await db.ref('registrations').push(data);
+    document.getElementById('stepper').innerHTML='';
+    document.getElementById('formCard').innerHTML=`
+      <div style="text-align:center;padding:40px 20px">
+        <div style="font-size:3.5rem;margin-bottom:16px">🎉</div>
+        <h2 style="color:var(--blue);margin-bottom:8px">הרישום נשלח בהצלחה!</h2>
+        <p style="color:var(--muted);margin-bottom:24px">
+          תודה! קיבלנו את הפרטים של <strong>${fd.stFN} ${fd.stLN}</strong>.<br>
+          נציג/ת בית הספר יצור/תצור עמכם קשר בקרוב לתיאום ראיון.
+        </p>
+        <button class="btn btn-primary" onclick="goHome()">🏠 חזרה לדף הבית</button>
+      </div>`;
+  }catch(e){
+    console.error(e);btn.disabled=false;btn.innerHTML='📤 שלח רישום';
+    let msg='אירעה שגיאה בשמירה. נסו שוב.';
+    if(e.message&&e.message.includes('permission'))
+      msg='⚠️ שגיאת הרשאות Firebase: בדקי שכללי הגישה ב-Realtime Database מוגדרים ל-Test mode.';
+    document.getElementById('formCard').insertAdjacentHTML('afterbegin',`<div class="al al-err">${msg}</div>`);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  ADMIN – DASHBOARD
+// ══════════════════════════════════════════════════════
+async function loadDashboard(){
+  document.getElementById('adminContent').innerHTML='<div class="loading"><div class="spin"></div><br>טוען נתונים...</div>';
+  try{
+    const snap=await db.ref('registrations').once('value');
+    const val=snap.val()||{};
+    allRegs=Object.entries(val).map(([id,d])=>({id,...d}));
+    allRegs.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    renderDash();
+  }catch(e){
+    document.getElementById('adminContent').innerHTML=`<div class="al al-err">שגיאה: ${e.message}</div>`;
+  }
+}
+
+function renderDash(){
+  const n=allRegs.length;
+  const cnt=(s)=>allRegs.filter(r=>r.status===s).length;
+  document.getElementById('adminContent').innerHTML=`
+    <div class="atop">
+      <h2>📋 לוח ניהול רישומים</h2>
+      <button class="btn btn-primary btn-sm" onclick="loadDashboard()">🔄 רענון</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">${n}</div><div class="lbl">סה"כ רישומים</div></div>
+      <div class="stat"><div class="num" style="color:#6a1b9a">${cnt('חדש')}</div><div class="lbl">חדשים</div></div>
+      <div class="stat"><div class="num" style="color:#1565c0">${cnt('ראיון נקבע')}</div><div class="lbl">ראיון נקבע</div></div>
+      <div class="stat"><div class="num" style="color:#2e7d32">${cnt('התקבל')}</div><div class="lbl">התקבלו</div></div>
+      <div class="stat"><div class="num" style="color:#c62828">${cnt('לא התקבל')}</div><div class="lbl">לא התקבלו</div></div>
+    </div>
+    <div class="filters">
+      <input id="srch" placeholder="🔍 חיפוש שם, ת"ז, כיתה..." oninput="filterRegs()">
+      <select id="fStat" onchange="filterRegs()">
+        <option value="">כל הסטטוסים</option>
+        <option>חדש</option><option>ממתין</option>
+        <option>ראיון נקבע</option><option>התקבל</option><option>לא התקבל</option>
+      </select>
+      <select id="fGrade" onchange="filterRegs()">
+        <option value="">כל הכיתות</option>
+        ${['א','ב','ג','ד','ה','ו','ז','ח','ט','י','יא','יב'].map(g=>`<option value="${g}">כיתה ${g}</option>`).join('')}
+      </select>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr>
+        <th>שם התלמיד</th><th>ת"ז</th><th>כיתה</th>
+        <th>הורה א׳</th><th>טלפון</th><th>סטטוס</th><th>תאריך</th><th></th>
+      </tr></thead>
+      <tbody id="tblBody"></tbody>
+    </table></div>`;
+  filterRegs();
+}
+
+function filterRegs(){
+  const q=(document.getElementById('srch')?.value||'').toLowerCase();
+  const fs=document.getElementById('fStat')?.value||'';
+  const fg=document.getElementById('fGrade')?.value||'';
+  const list=allRegs.filter(r=>{
+    const nm=`${r.stFN||''} ${r.stLN||''}`.toLowerCase();
+    return(!q||nm.includes(q)||(r.stId||'').includes(q)||
+      (r.stGrade||'').includes(q))&&(!fs||r.status===fs)&&(!fg||r.stGrade===fg);
+  });
+  const tb=document.getElementById('tblBody');if(!tb)return;
+  if(!list.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">לא נמצאו רישומים</td></tr>';return;}
+  tb.innerHTML=list.map(r=>`<tr>
+    <td><strong>${r.stFN||''} ${r.stLN||''}</strong></td>
+    <td>${r.stId||'—'}</td>
+    <td>${r.stGrade?'כ\''+r.stGrade:'—'}</td>
+    <td>${r.p1FN||''} ${r.p1LN||''}</td>
+    <td>${r.p1Ph||'—'}</td>
+    <td>${badge(r.status)}</td>
+    <td>${fmtDate(r.createdAt)}</td>
+    <td><button class="btn btn-outline btn-sm" onclick="viewReg('${r.id}')">👁 פרטים</button></td>
+  </tr>`).join('');
+}
+
+function badge(s){
+  const m={'חדש':'b-new','ממתין':'b-wait','ראיון נקבע':'b-int','התקבל':'b-acc','לא התקבל':'b-rej'};
+  return `<span class="bdg ${m[s]||'b-new'}">${s||'חדש'}</span>`;
+}
+function fmtDate(ts){
+  if(!ts)return'—';
+  try{const d=new Date(ts);return d.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'})}catch{return'—'}
+}
+
+// ══════════════════════════════════════════════════════
+//  ADMIN – DETAIL VIEW
+// ══════════════════════════════════════════════════════
+function viewReg(id){
+  const r=allRegs.find(x=>x.id===id);if(!r)return;
+  editId=id;
+  document.getElementById('adminContent').innerHTML=`
+    <div class="atop">
+      <button class="btn btn-outline" onclick="renderDash()">← חזרה לרשימה</button>
+      <button class="btn btn-primary btn-sm" onclick="printCard('${id}')">🖨️ כרטיס תלמיד</button>
+    </div>
+    <div class="dpanel">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h2 style="color:var(--blue);font-size:1.5rem">${r.stFN||''} ${r.stLN||''}</h2>
+          <div style="color:var(--muted);font-size:.85rem;margin-top:3px">
+            ת"ז: ${r.stId||'—'} &nbsp;|&nbsp; כיתה מבוקשת: ${r.stGrade||'—'} &nbsp;|&nbsp; נרשם: ${fmtDate(r.createdAt)}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <select id="stSel" style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-family:Heebo,sans-serif">
+            ${['חדש','ממתין','ראיון נקבע','התקבל','לא התקבל'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+          <button class="btn btn-gold btn-sm" onclick="saveStatus()">💾 עדכן סטטוס</button>
+        </div>
+      </div>
+      <div id="saveMsg"></div>
+
+      <div class="dsec"><h4>👤 פרטי תלמיד</h4>
+        <div class="dgrid">
+          ${di('שם מלא',(r.stFN||'')+' '+(r.stLN||''))}
+          ${di('ת"ז',r.stId)}${di('ת.לידה',r.stBirth)}${di('מין',r.stGender)}
+          ${di('כיתה',r.stGrade)}${di('ארץ לידה',r.stBCountry)}${di('עיר לידה',r.stBCity)}
+          ${di('שפת אם',r.stLang)}${di('בי"ס קודם',r.prevSchool)}${di('כיתה קודמת',r.prevGrade)}
+        </div>
+        ${r.transReason?`<div style="margin-top:10px"><div class="di"><label>סיבת מעבר</label><span>${r.transReason}</span></div></div>`:''}
+      </div>
+
+      <div class="dsec"><h4>👨 הורה א׳ – ${r.p1Rel||''}</h4>
+        <div class="dgrid">
+          ${di('שם',(r.p1FN||'')+' '+(r.p1LN||''))}${di('ת"ז',r.p1Id)}
+          ${di('טלפון',r.p1Ph)}${di('טלפון נוסף',r.p1Ph2)}
+          ${di('דוא"ל',r.p1Email)}${di('עיסוק',r.p1Job)}
+          ${di('מקום עבודה',r.p1Work)}${di('השכלה',r.p1Edu)}
+        </div>
+      </div>
+
+      ${!r.noP2?`<div class="dsec"><h4>👩 הורה ב׳ – ${r.p2Rel||''}</h4>
+        <div class="dgrid">
+          ${di('שם',(r.p2FN||'')+' '+(r.p2LN||''))}${di('ת"ז',r.p2Id)}
+          ${di('טלפון',r.p2Ph)}${di('דוא"ל',r.p2Email)}
+          ${di('עיסוק',r.p2Job)}${di('מצב משפחתי',r.famStatus)}
+        </div>
+        ${r.famNotes?`<div style="margin-top:8px" class="di"><label>הערות משפחה</label><span>${r.famNotes}</span></div>`:''}</div>`
+      :`<div class="dsec"><h4>👩 הורה ב׳</h4><p style="color:var(--muted);font-size:.88rem">לא רלוונטי</p></div>`}
+
+      <div class="dsec"><h4>🏠 כתובת וחירום</h4>
+        <div class="dgrid">
+          ${di('כתובת',[r.street,r.houseN,r.apt?'דירה '+r.apt:'',r.city].filter(Boolean).join(', '))}
+          ${di('מיקוד',r.zip)}${di('חירום – שם',r.emgName)}
+          ${di('קשר',r.emgRel)}${di('טלפון חירום',r.emgPh)}${di('הסעה',r.transport)}
+        </div>
+      </div>
+
+      <div class="dsec"><h4>🏥 בריאות</h4>
+        <div class="dgrid">
+          ${di('קופ"ח',r.hmo)}${di('רופא',r.famDoc)}${di('טלפון',r.docPh)}${di('תל"א',r.hasIEP)}
+        </div>
+        <div style="margin-top:10px;display:grid;gap:8px">
+          ${r.medCond?`<div class="di"><label>מחלות רקע</label><span>${r.medCond}</span></div>`:''}
+          ${r.meds?`<div class="di"><label>תרופות</label><span>${r.meds}</span></div>`:''}
+          ${r.allergies?`<div class="di"><label>אלרגיות</label><span>${r.allergies}</span></div>`:''}
+          ${r.learnDiff?`<div class="di"><label>קשיי למידה</label><span>${r.learnDiff}</span></div>`:''}
+        </div>
+      </div>
+
+      ${r.hobbies||r.strengths||r.challenges?`<div class="dsec"><h4>📋 מידע נוסף</h4>
+        <div style="display:grid;gap:8px">
+          ${r.hobbies?`<div class="di"><label>תחביבים</label><span>${r.hobbies}</span></div>`:''}
+          ${r.strengths?`<div class="di"><label>עוצמות</label><span>${r.strengths}</span></div>`:''}
+          ${r.challenges?`<div class="di"><label>אתגרים</label><span>${r.challenges}</span></div>`:''}
+        </div></div>`:''}
+
+      <!-- INTERVIEW BOX -->
+      <div class="ivbox">
+        <h4>🎙️ פרטי ראיון – לצוות בלבד</h4>
+        <div class="row">
+          <div class="ff"><label>תאריך ראיון</label><input type="date" id="ivDate" value="${r.ivDate||''}"></div>
+          <div class="ff"><label>שם המראיין</label><input type="text" id="ivBy" placeholder="שם חבר הצוות" value="${r.ivBy||''}"></div>
+        </div>
+        <div class="ff" style="margin-top:10px">
+          <label>הערות מהראיון</label>
+          <textarea id="ivNotes" placeholder="תרשומת הראיון, השלמות, התרשמות כללית...">${r.ivNotes||''}</textarea>
+        </div>
+        <div class="ff" style="margin-top:10px">
+          <label>הערות מנהליות פנימיות</label>
+          <textarea id="adminNotes" placeholder="הערות פנימיות לצוות...">${r.adminNotes||''}</textarea>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" onclick="saveIV()">💾 שמור הערות ראיון</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function di(l,v){return `<div class="di"><label>${l}</label><span>${v||'—'}</span></div>`}
+
+async function saveStatus(){
+  const s=document.getElementById('stSel').value;
+  try{
+    await db.ref('registrations/'+editId).update({status:s});
+    const r=allRegs.find(x=>x.id===editId);if(r)r.status=s;
+    msg('saveMsg','al-ok','✓ הסטטוס עודכן');
+  }catch(e){msg('saveMsg','al-err','שגיאה בשמירה')}
+}
+
+async function saveIV(){
+  try{
+    const upd={ivDate:document.getElementById('ivDate').value,
+      ivBy:document.getElementById('ivBy').value,
+      ivNotes:document.getElementById('ivNotes').value,
+      adminNotes:document.getElementById('adminNotes').value};
+    await db.ref('registrations/'+editId).update(upd);
+    const r=allRegs.find(x=>x.id===editId);if(r)Object.assign(r,upd);
+    msg('saveMsg','al-ok','✓ הערות הראיון נשמרו');
+  }catch(e){msg('saveMsg','al-err','שגיאה בשמירה')}
+}
+
+function msg(id,cls,txt){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=`<div class="al ${cls}">${txt}</div>`;
+  setTimeout(()=>{if(el)el.innerHTML=''},2500);
+}
+
+// ══════════════════════════════════════════════════════
+//  STUDENT CARD
+// ══════════════════════════════════════════════════════
+function printCard(id){
+  const r=allRegs.find(x=>x.id===id);if(!r)return;
+  const ini=(r.stFN?.[0]||'')+(r.stLN?.[0]||'');
+  document.getElementById('pcard').innerHTML=`
+    <div class="scard" dir="rtl">
+      <div class="scard-hdr">
+        <div class="savatar">${ini}</div>
+        <div>
+          <div style="font-size:1.25rem;font-weight:800">${r.stFN||''} ${r.stLN||''}</div>
+          <div style="font-size:.82rem;opacity:.8">ת"ז: ${r.stId||'—'} | כיתה: ${r.stGrade||'—'}</div>
+          <div style="margin-top:4px">${badge(r.status)}</div>
+        </div>
+      </div>
+      <div class="scard-body">
+        <div class="scard-fi"><label>תאריך לידה</label>${r.stBirth||'—'}</div>
+        <div class="scard-fi"><label>מין</label>${r.stGender||'—'}</div>
+        <div class="scard-fi"><label>כתובת</label>${r.street||''} ${r.houseN||''}, ${r.city||''}</div>
+        <div class="scard-fi"><label>הורה א׳</label>${r.p1FN||''} ${r.p1LN||''}</div>
+        <div class="scard-fi"><label>טלפון הורה</label>${r.p1Ph||'—'}</div>
+        <div class="scard-fi"><label>חירום</label>${r.emgPh||'—'} (${r.emgName||'—'})</div>
+        <div class="scard-fi"><label>קופ"ח</label>${r.hmo||'—'}</div>
+        <div class="scard-fi"><label>אלרגיות</label>${r.allergies||'אין'}</div>
+      </div>
+      ${r.medCond&&r.medCond!=='אין'?`<div class="scard-note scard-med">⚠️ <strong>רפואי:</strong> ${r.medCond}</div>`:''}
+      ${r.meds&&r.meds!=='אין'?`<div class="scard-note scard-med" style="margin-top:4px">💊 <strong>תרופות:</strong> ${r.meds}</div>`:''}
+      ${r.ivNotes?`<div class="scard-note scard-int" style="margin-top:4px">📝 <strong>הערות ראיון:</strong> ${r.ivNotes}</div>`:''}
+      <div style="margin-top:10px;text-align:center;font-size:.68rem;color:#aaa">
+        בית ספר אביגור &nbsp;|&nbsp; הופק: ${new Date().toLocaleDateString('he-IL')}
+      </div>
+    </div>`;
+  openModal('modCard');
+}
+</script>
+</body>
+</html>
