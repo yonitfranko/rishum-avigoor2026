@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>מערכת רישום – בית ספר אביגור</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -175,10 +176,14 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
   body *{visibility:hidden}
   #pcard,#pcard *{visibility:visible}
   #pcard{position:fixed;top:0;left:0;width:100%;padding:20px}
+  #printAllArea,#printAllArea *{visibility:visible}
+  #printAllArea{position:fixed;top:0;left:0;width:100%;padding:16px}
+  .print-break{page-break-after:always}
 }
 </style>
 </head>
 <body>
+
 
 <!-- HEADER -->
 <div class="hdr">
@@ -188,50 +193,81 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
   <div style="display:flex;align-items:center;gap:12px">
     <div id="hdrNav"></div>
-    <div class="hdr-logo">א</div>
+    <img src="logo.png" alt="לוגו"
+  style="height:42px;width:auto;object-fit:contain;"
+  onerror="this.style.display='none'">
   </div>
 </div>
 
+
+<!-- LANDING -->
 <!-- LANDING -->
 <div id="scrLanding" class="screen active">
   <div class="land">
+  
     <h2>ברוכים הבאים לפורטל הרישום</h2>
-    <p>שנת הלימודים תשפ"ז – אנא בחרו את סוג המשתמש</p>
+    <p>כיתה א׳ – שנת הלימודים תשפ"ז</p>
 
-    <!-- RESUME BOX -->
-    <div class="resume-box">
-      <h3>📋 ממשיכים טופס שהתחלתם?</h3>
-      <p>הזינו את ת"ז הילד/ה ותאריך הלידה כדי לחזור לטופס</p>
-      <div class="row" style="margin-bottom:12px">
-        <div class="ff">
-          <label>ת"ז ילד/ה</label>
-          <input id="resumeId" placeholder="9 ספרות" maxlength="9">
-        </div>
-        <div class="ff">
-          <label>תאריך לידה</label>
-          <input type="date" id="resumeBirth">
-        </div>
+    <!-- הנחיות -->
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;
+      padding:14px 18px;max-width:460px;width:100%;margin-bottom:28px;text-align:right">
+      <div style="font-size:.82rem;font-weight:700;color:var(--blue);margin-bottom:8px">
+        📋 הנחיות חשובות לפני המילוי
       </div>
-      <div id="resumeMsg"></div>
-      <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="resumeForm()">
-        🔄 המשך מילוי הטופס
-      </button>
+      <ul style="font-size:.8rem;color:var(--muted);padding-right:16px;line-height:2">
+        <li><strong>ת"ז של הילד/ה</strong> – הקלידו בדיוק 9 ספרות, ללא מקפים ורווחים</li>
+        <li><strong>שמירה אוטומטית</strong> – הנתונים נשמרים בכל לחיצה על "המשך"</li>
+        <li><strong>המשך מילוי</strong> – הזינו ת"ז ותאריך לידה כדי לחזור לטופס</li>
+        <li><strong>בכל שאלה</strong> – מזכירות בית הספר: 03-6775049</li>
+      </ul>
     </div>
 
-    <div class="land-cards">
-      <div class="lcard" onclick="startParent()">
-        <div class="ico">👨‍👩‍👧</div>
-        <h3>רישום חדש</h3>
-        <p>מילוי טופס רישום לתלמיד/ה חדש/ה</p>
+    <!-- כפתורים -->
+    <div style="display:flex;flex-direction:column;align-items:center;
+      gap:12px;width:100%;max-width:360px">
+
+      <!-- רישום חדש – גדול ובולט -->
+      <button onclick="startParent()" style="background:linear-gradient(135deg,var(--blue),var(--blue2));
+        color:#fff;border:none;border-radius:14px;padding:18px 36px;
+        font-size:1.1rem;font-weight:800;cursor:pointer;width:100%;
+        box-shadow:0 4px 18px rgba(30,58,95,.3);transition:.2s;
+        font-family:'Heebo',sans-serif"
+        onmouseover="this.style.transform='translateY(-2px)'"
+        onmouseout="this.style.transform='translateY(0)'">
+        📝 רישום חדש
+      </button>
+
+      <!-- המשך מילוי – קטן יותר -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;
+        padding:16px;width:100%">
+        <div style="font-size:.82rem;font-weight:700;color:var(--blue);margin-bottom:10px">
+          🔄 המשך מילוי טופס קיים
+        </div>
+        <div class="row" style="margin-bottom:10px">
+          <div class="ff">
+            <label>ת"ז ילד/ה</label>
+            <input id="resumeId" placeholder="9 ספרות" maxlength="9" inputmode="numeric">
+          </div>
+          <div class="ff">
+            <label>תאריך לידה</label>
+            <input type="date" id="resumeBirth">
+          </div>
+        </div>
+        <div id="resumeMsg"></div>
+        <button class="btn btn-outline" style="width:100%;justify-content:center"
+          onclick="resumeForm()">המשך ←</button>
       </div>
-      <div class="lcard" onclick="showAdminLogin()">
-        <div class="ico">🔐</div>
-        <h3>צוות בית ספר</h3>
-        <p>ניהול רישומים, ראיונות וצפייה בפרטים</p>
-      </div>
+
+      <!-- כניסת צוות – קטן ושקט -->
+      <span onclick="showAdminLogin()"
+        style="font-size:.75rem;color:var(--muted);cursor:pointer;
+        text-decoration:underline;opacity:.65;margin-top:4px">
+        כניסת צוות
+      </span>
     </div>
   </div>
 </div>
+
 
 <!-- PARENT FORM -->
 <div id="scrParent" class="screen">
@@ -241,10 +277,12 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 </div>
 
+
 <!-- ADMIN -->
 <div id="scrAdmin" class="screen">
   <div class="aw" id="adminContent"></div>
 </div>
+
 
 <!-- ADMIN LOGIN MODAL -->
 <div id="modLogin" class="moverlay" style="display:none">
@@ -260,6 +298,19 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 </div>
 
+<!-- PRINT ALL MODAL -->
+<div id="modPrintAll" class="moverlay" style="display:none">
+  <div class="mdl" style="max-width:640px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="margin:0">🖨️ הדפסת כל המרואיינים</h3>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="window.print()">הדפס</button>
+        <button class="btn btn-outline btn-sm" onclick="closeModal('modPrintAll')">סגור</button>
+      </div>
+    </div>
+    <div id="printAllArea"></div>
+  </div>
+</div>
 <!-- STUDENT CARD MODAL -->
 <div id="modCard" class="moverlay" style="display:none">
   <div class="mdl" style="max-width:580px">
@@ -271,9 +322,11 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 </div>
 
+
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 
 <script>
 // ══ FIREBASE ══
@@ -288,7 +341,8 @@ const FB_CFG = {
 };
 firebase.initializeApp(FB_CFG);
 var db = firebase.database();
-var ADMIN_PWD = 'avigoor2025';
+var ADMIN_PWD = 'avigoor2026';
+
 
 // ══ STATE ══
 var fd = {};
@@ -296,6 +350,7 @@ var step = 0;
 var editId = null;
 var existingKey = null; // Firebase key if resuming
 var allRegs = [];
+
 
 const STEPS = [
   {l:'פרטי תלמיד'},
@@ -308,6 +363,7 @@ const STEPS = [
   {l:'אישורים'},
   {l:'סיום'},
 ];
+
 
 // ══ NAV ══
 function showScr(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
@@ -325,6 +381,7 @@ function doLogin(){
     closeModal('modLogin');showScr('scrAdmin');setNav();loadDashboard();
   }else{document.getElementById('loginMsg').innerHTML='<div class="al al-err">סיסמה שגויה</div>'}
 }
+
 
 // ══ RESUME ══
 async function resumeForm(){
@@ -348,6 +405,7 @@ async function resumeForm(){
   }catch(e){msgEl.innerHTML='<div class="al al-err">שגיאה: '+e.message+'</div>'}
 }
 
+
 // ══ STEPPER ══
 function renderStepper(){
   document.getElementById('stepper').innerHTML=STEPS.map((s,i)=>`
@@ -356,6 +414,7 @@ function renderStepper(){
       <div class="stp-lbl">${s.l}</div>
     </div>`).join('');
 }
+
 
 // ══ SAVE/RESTORE ══
 function save(){
@@ -375,6 +434,7 @@ function restore(){
   });
 }
 
+
 async function autoSave(){
   save();
   if(!fd.stId)return;
@@ -389,13 +449,47 @@ async function autoSave(){
   }catch(e){console.warn('autosave:',e.message)}
 }
 
-function next(){autoSave().then(()=>{if(step<STEPS.length-1){step++;renderStepper();renderStep();window.scrollTo(0,0);}})}
+
+function next(){
+  if(step===0){
+    save();
+    var tz=(fd.stId||'').trim();
+    if(!tz){
+      document.getElementById('formCard').insertAdjacentHTML('afterbegin',
+        '<div class="al al-err">יש להזין מספר ת"ז לפני המשך</div>');
+      return;
+    }
+    db.ref('registrations').orderByChild('stId').equalTo(tz).once('value').then(function(snap){
+      var val=snap.val();
+      if(val&&!existingKey){
+        var key=Object.keys(val)[0];
+        var ex=val[key];
+        var nm=(ex.stFN||'')+' '+(ex.stLN||'');
+        document.getElementById('formCard').insertAdjacentHTML('afterbegin',
+          '<div class="al al-warn" id="dupWarn">'+
+          '⚠️ נמצא רישום קיים עבור ת"ז זו'+(nm?' – <strong>'+nm+'</strong>':'')+
+          '<div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">'+
+          '<button class="btn btn-gold btn-sm" onclick="continueExisting(\''+key+'\')">🔄 המשך את הטופס הקיים</button>'+
+          '<button class="btn btn-outline btn-sm" onclick="dismissDup()">➕ צור רישום חדש בכל מקרה</button>'+
+          '</div></div>');
+      }else{
+        autoSave().then(function(){if(step<STEPS.length-1){step++;renderStepper();renderStep();window.scrollTo(0,0);}});
+      }
+    }).catch(function(){
+      autoSave().then(function(){if(step<STEPS.length-1){step++;renderStepper();renderStep();window.scrollTo(0,0);}});
+    });
+  }else{
+    autoSave().then(function(){if(step<STEPS.length-1){step++;renderStepper();renderStep();window.scrollTo(0,0);}});
+  }
+}
 function prev(){save();if(step>0){step--;renderStepper();renderStep();window.scrollTo(0,0)}}
+
 
 function renderStep(){
   document.getElementById('formCard').innerHTML=[s0,s1,s2,s3,s4,s5,s6,s7,s8][step]();
   restore();
 }
+
 
 function navBtns(lastStep){
   return `<div class="fn">
@@ -403,6 +497,7 @@ function navBtns(lastStep){
     ${!lastStep?`<button class="btn btn-primary" onclick="next()">המשך ←</button>`:''}
   </div>`;
 }
+
 
 // ══════════════════════════════════════════════════════
 // STEP 0 – פרטי תלמיד
@@ -444,9 +539,23 @@ function s0(){return `
   </div>
   ${navBtns()}`}
 
+function continueExisting(key){
+  db.ref('registrations/'+key).once('value').then(function(snap){
+    fd=Object.assign({},snap.val());
+    existingKey=key;
+    renderStep();
+  });
+}
+function dismissDup(){
+  var el=document.getElementById('dupWarn');
+  if(el)el.remove();
+  autoSave().then(function(){if(step<STEPS.length-1){step++;renderStepper();renderStep();window.scrollTo(0,0);}});
+}
+
 function toggleGardenOther(sel){
   document.getElementById('gardenOtherRow').style.display=sel.value==='אחר'?'grid':'none';
 }
+
 
 // ══════════════════════════════════════════════════════
 // STEP 1 – הורה א׳
@@ -483,6 +592,7 @@ function s1(){return `
     </div>
   </div>
   ${navBtns()}`}
+
 
 // ══════════════════════════════════════════════════════
 // STEP 2 – הורה ב׳
@@ -526,10 +636,12 @@ function s2(){return `
   </div>
   ${navBtns()}`}
 
+
 function toggleP2(cb){
   var el=document.getElementById('p2Fields');
   el.style.opacity=cb.checked?'0.35':'1';el.style.pointerEvents=cb.checked?'none':'';
 }
+
 
 // ══════════════════════════════════════════════════════
 // STEP 3 – כתובת וחירום
@@ -562,6 +674,7 @@ function s3(){return `
   </div>
   ${navBtns()}`}
 
+
 // ══════════════════════════════════════════════════════
 // STEP 4 – בריאות
 // ══════════════════════════════════════════════════════
@@ -571,8 +684,8 @@ function s4(){return `
   <div class="row">
     <div class="ff"><label>קופת חולים</label>
       <select name="hmo"><option value="">בחר/י</option><option>מכבי</option><option>כללית</option><option>מאוחדת</option><option>לאומית</option></select></div>
-    <div class="ff"><label>האם יש תל"א?</label>
-      <select name="hasIEP"><option value="לא">לא</option><option value="כן">כן</option></select></div>
+    
+      
   </div>
   <div class="sec">⚠️ מצב רפואי חריג</div>
   <div class="row one">
@@ -609,6 +722,7 @@ function s4(){return `
   </div>
   ${navBtns()}`}
 
+
 function toggleMedical(sel){
   document.getElementById('medicalDetails').style.display=sel.value==='כן'?'block':'none';
 }
@@ -620,6 +734,7 @@ function handleFile(input){
   el.innerHTML='<div class="al al-ok">✓ הקובץ נבחר: '+file.name+'<br><span style="font-size:.75rem">הקובץ יצורף לאחר השליחה. ניתן גם להביא עותק פיזי בראיון.</span></div>';
   fd.diagFileName=file.name;
 }
+
 
 // ══════════════════════════════════════════════════════
 // STEP 5 – מוכנות לכיתה א׳
@@ -672,6 +787,7 @@ function s5(){return `
   </div>
   ${navBtns()}`}
 
+
 // ══════════════════════════════════════════════════════
 // STEP 6 – שיבוצים
 // ══════════════════════════════════════════════════════
@@ -704,6 +820,7 @@ function s6(){return `
       <textarea name="placementNotes" placeholder="מידע נוסף שתרצו לשתף..."></textarea></div>
   </div>
   ${navBtns()}`}
+
 
 // ══════════════════════════════════════════════════════
 // STEP 7 – אישורים
@@ -739,6 +856,7 @@ function s7(){return `
       <textarea name="addNotes" placeholder="כל מידע נוסף שתרצו לשתף עם הצוות..."></textarea></div>
   </div>
   ${navBtns()}`}
+
 
 // ══════════════════════════════════════════════════════
 // STEP 8 – סיום ושליחה
@@ -782,7 +900,9 @@ function s8(){return `
     <button class="btn btn-gold" id="subBtn" onclick="submitForm()">📤 שלח רישום סופי</button>
   </div>`}
 
+
 function si(l,v){return `<div class="di"><label>${l}</label><span>${v||'—'}</span></div>`}
+
 
 // ══════════════════════════════════════════════════════
 // SUBMIT
@@ -819,7 +939,7 @@ async function submitForm(){
           תודה! קיבלנו את הפרטים של <strong>${fd.stFN} ${fd.stLN}</strong>.
         </p>
         <p style="color:var(--muted);margin-bottom:24px">
-          נציג/ת בית הספר יצור/תצור עמכם קשר בקרוב לתיאום ראיון.<br>
+      הנכם מוזמנים למפגש היכרות אישי עם צוות בית הספר (אחד ההורים ללא ילדכם) ביום שני 8.6.26 בשעה שנמסרה לכם ממזכירות ביה"ס. בכל שאלה ניתן לפנות למזכירות בית הספר בטלפון 03-6775049<br>
           <small>לחזרה לטופס בעתיד: ת"ז <strong>${fd.stId}</strong> + תאריך לידה</small>
         </p>
         <button class="btn btn-primary" onclick="goHome()">🏠 חזרה לדף הבית</button>
@@ -832,6 +952,7 @@ async function submitForm(){
     document.getElementById('formCard').insertAdjacentHTML('afterbegin','<div class="al al-err">'+errMsg+'</div>');
   }
 }
+
 
 // ══════════════════════════════════════════════════════
 // ADMIN – DASHBOARD
@@ -849,16 +970,25 @@ async function loadDashboard(){
   }
 }
 
+
 function renderDash(){
-  var n=allRegs.length;
+  var uniqueIds=new Set(allRegs.map(function(r){return r.stId;}).filter(Boolean));
+var n=uniqueIds.size;
+var nDups=allRegs.length-n;
   var cnt=function(s){return allRegs.filter(function(r){return r.status===s}).length};
   document.getElementById('adminContent').innerHTML=`
     <div class="atop">
       <h2>📋 לוח ניהול רישומים</h2>
       <button class="btn btn-primary btn-sm" onclick="loadDashboard()">🔄 רענון</button>
+      <button class="btn btn-outline btn-sm" onclick="showMuniUpload()">📤 ייבוא רשימת עירייה</button>
+      <button class="btn btn-outline btn-sm" onclick="showTracking()">📊 טבלת מעקב</button>
+      <button class="btn btn-outline btn-sm" onclick="showClassUpload()">🏫 ייבוא שיבוץ כיתות</button>
+      <button class="btn btn-outline btn-sm" onclick="printAllInterviewed()">🖨️ הדפסת מרואיינים</button>
     </div>
+    <div id="muniUploadArea"></div>
     <div class="stats">
-      <div class="stat"><div class="num">${n}</div><div class="lbl">סה"כ רישומים</div></div>
+      <div class="stat"><div class="num">${n}</div><div class="lbl">סה"כ תלמידים</div></div>
+${nDups>0?'<div class="stat"><div class="num" style="color:#e53935">'+nDups+'</div><div class="lbl">רישומים כפולים ⚠️</div></div>':''}
       <div class="stat"><div class="num" style="color:#6a1b9a">${cnt('חדש')}</div><div class="lbl">חדשים</div></div>
       <div class="stat"><div class="num" style="color:#1565c0">${cnt('ראיון נקבע')}</div><div class="lbl">ראיון נקבע</div></div>
       <div class="stat"><div class="num" style="color:#2e7d32">${cnt('התקבל')}</div><div class="lbl">התקבלו</div></div>
@@ -882,6 +1012,7 @@ function renderDash(){
   filterRegs();
 }
 
+
 function filterRegs(){
   var q=(document.getElementById('srch')?.value||'').toLowerCase();
   var fs=document.getElementById('fStat')?.value||'';
@@ -889,9 +1020,14 @@ function filterRegs(){
     var nm=((r.stFN||'')+' '+(r.stLN||'')).toLowerCase();
     return(!q||nm.includes(q)||(r.stId||'').includes(q)||(r.garden||'').includes(q))&&(!fs||r.status===fs);
   });
+
+  // זיהוי ת"זים כפולים
+  var tzCount={};
+  allRegs.forEach(function(r){if(r.stId)tzCount[r.stId]=(tzCount[r.stId]||0)+1;});
   var tb=document.getElementById('tblBody');if(!tb)return;
   if(!list.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">לא נמצאו רישומים</td></tr>';return;}
-  tb.innerHTML=list.map(function(r){return `<tr>
+  var tzCount={};allRegs.forEach(function(r){if(r.stId)tzCount[r.stId]=(tzCount[r.stId]||0)+1;});
+  tb.innerHTML=list.map(function(r){var isDup=(tzCount[r.stId]||0)>1;return `<tr style="${isDup?'background:#fce4ec':''}">
     <td><strong>${r.stFN||''} ${r.stLN||''}</strong></td>
     <td>${r.stId||'—'}</td>
     <td style="font-size:.78rem">${r.garden||'—'}</td>
@@ -903,6 +1039,7 @@ function filterRegs(){
   </tr>`}).join('');
 }
 
+
 function badge(s){
   var m={'חדש':'b-new','ממתין':'b-wait','ראיון נקבע':'b-int','התקבל':'b-acc','לא התקבל':'b-rej'};
   return '<span class="bdg '+(m[s]||'b-new')+'">'+(s||'חדש')+'</span>';
@@ -911,6 +1048,7 @@ function fmtDate(ts){
   if(!ts)return'—';
   try{return new Date(ts).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'})}catch{return'—'}
 }
+
 
 // ══════════════════════════════════════════════════════
 // ADMIN – DETAIL
@@ -922,14 +1060,17 @@ function viewReg(id){
     [r.friend1FN,r.friend1LN],[r.friend2FN,r.friend2LN],[r.friend3FN,r.friend3LN]
   ].filter(function(f){return f[0]||f[1]}).map(function(f,i){return `<div class="di"><label>חבר/ה ${i+1}</label><span>${f[0]||''} ${f[1]||''}</span></div>`}).join('');
 
+
   var skills=['skLetters:אותיות','skName:כתיבת שם','skCount:ספירה עד 10','skInstructions:מבין הוראות',
     'skFocus:ריכוז במפגש','skPencil:אחיזת עיפרון','skColor:צביעה בקווי מתאר','skRead:קריאה']
     .filter(function(s){return r[s.split(':')[0]]}).map(function(s){return s.split(':')[1]}).join(' · ');
+
 
   document.getElementById('adminContent').innerHTML=`
     <div class="atop">
       <button class="btn btn-outline" onclick="renderDash()">← חזרה לרשימה</button>
       <button class="btn btn-primary btn-sm" onclick="printCard('${id}')">🖨️ כרטיס תלמיד</button>
+      <button class="btn btn-sm" style="background:#ffebee;color:#c62828;border:1.5px solid #ef9a9a" onclick="deleteReg('${id}','${r.stFN||''} ${r.stLN||''}')">🗑️ מחק רישום</button>
     </div>
     <div class="dpanel">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px">
@@ -937,6 +1078,7 @@ function viewReg(id){
           <h2 style="color:var(--blue);font-size:1.5rem">${r.stFN||''} ${r.stLN||''}</h2>
           <div style="color:var(--muted);font-size:.85rem;margin-top:3px">
             ת"ז: ${r.stId||'—'} &nbsp;|&nbsp; גן: ${r.garden||'—'} &nbsp;|&nbsp; נרשם: ${fmtDate(r.submittedAt||r.updatedAt)}
+${r.assignedClass?'&nbsp;|&nbsp; <strong style="color:var(--gold);font-size:1rem">🏫 כיתה: '+r.assignedClass+'</strong>'  :''}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -948,6 +1090,7 @@ function viewReg(id){
       </div>
       <div id="saveMsg"></div>
 
+
       <div class="dsec"><h4>👤 פרטי תלמיד</h4>
         <div class="dgrid">
           ${di('שם מלא',(r.stFN||'')+' '+(r.stLN||''))}
@@ -956,6 +1099,7 @@ function viewReg(id){
           ${r.gardenOther?di('גן אחר',r.gardenOther):''}
         </div>
       </div>
+
 
       <div class="dsec"><h4>👨 הורה א׳ – ${r.p1Rel||''}</h4>
         <div class="dgrid">
@@ -967,6 +1111,7 @@ function viewReg(id){
         ${r.p1Unique?`<div style="margin-top:8px" class="di"><label>תרומה פוטנציאלית לביה"ס</label><span>${r.p1Unique}</span></div>`:''}
       </div>
 
+
       ${!r.noP2?`<div class="dsec"><h4>👩 הורה ב׳ – ${r.p2Rel||''}</h4>
         <div class="dgrid">
           ${di('שם',(r.p2FN||'')+' '+(r.p2LN||''))}${di('ת"ז',r.p2Id)}
@@ -977,6 +1122,7 @@ function viewReg(id){
         ${r.famNotes?`<div style="margin-top:8px" class="di"><label>הערות משפחה</label><span>${r.famNotes}</span></div>`:''}</div>`
       :`<div class="dsec"><h4>👩 הורה ב׳</h4><p style="color:var(--muted);font-size:.88rem">לא רלוונטי</p></div>`}
 
+
       <div class="dsec"><h4>🏠 כתובת וחירום</h4>
         <div class="dgrid">
           ${di('כתובת',[r.street,r.houseN,r.apt?'דירה '+r.apt:'',r.city].filter(Boolean).join(', '))}
@@ -984,15 +1130,17 @@ function viewReg(id){
         </div>
       </div>
 
+
       <div class="dsec"><h4>🏥 בריאות</h4>
         <div class="dgrid">
-          ${di('קופ"ח',r.hmo)}${di('מצב רפואי חריג',r.hasMedical)}${di('תל"א',r.hasIEP)}
+          ${di('קופ"ח',r.hmo)}${di('מצב רפואי חריג',r.hasMedical)}
           ${r.diagFileName?di('קובץ אבחון',r.diagFileName):''}
         </div>
         ${r.medCond?`<div style="margin-top:8px" class="di"><label>פרטי מצב רפואי</label><span>${r.medCond}</span></div>`:''}
         ${r.meds?`<div style="margin-top:8px" class="di"><label>תרופות</label><span>${r.meds}</span></div>`:''}
         ${r.learnDiff?`<div style="margin-top:8px" class="di"><label>אבחונים/קשיי למידה</label><span>${r.learnDiff}</span></div>`:''}
       </div>
+
 
       <div class="dsec"><h4>🌟 מוכנות לכיתה א׳</h4>
         <div class="dgrid">
@@ -1005,10 +1153,12 @@ function viewReg(id){
         ${r.hobbies?`<div style="margin-top:8px" class="di"><label>תחביבים</label><span>${r.hobbies}</span></div>`:''}
       </div>
 
+
       <div class="dsec"><h4>👫 בקשות שיבוץ</h4>
         <div class="dgrid">${friends||'<div class="di"><span>לא צוינו</span></div>'}</div>
         ${r.placementNotes?`<div style="margin-top:8px" class="di"><label>הערות שיבוץ</label><span>${r.placementNotes}</span></div>`:''}
       </div>
+
 
       <div class="dsec"><h4>📋 אישורים</h4>
         <div class="dgrid">
@@ -1017,6 +1167,7 @@ function viewReg(id){
         </div>
         ${r.addNotes?`<div style="margin-top:8px" class="di"><label>הערות נוספות</label><span>${r.addNotes}</span></div>`:''}
       </div>
+
 
       <!-- INTERVIEW -->
       <div class="ivbox">
@@ -1040,7 +1191,9 @@ function viewReg(id){
     </div>`;
 }
 
+
 function di(l,v){return `<div class="di"><label>${l}</label><span>${v||'—'}</span></div>`}
+
 
 async function saveStatus(){
   var s=document.getElementById('stSel').value;
@@ -1050,6 +1203,7 @@ async function saveStatus(){
     showMsg('saveMsg','al-ok','✓ הסטטוס עודכן');
   }catch(e){showMsg('saveMsg','al-err','שגיאה בשמירה')}
 }
+
 
 async function saveIV(){
   try{
@@ -1065,11 +1219,24 @@ async function saveIV(){
   }catch(e){showMsg('saveMsg','al-err','שגיאה בשמירה')}
 }
 
+async function deleteReg(id, name){
+  if(!confirm('האם אתה בטוח שברצונך למחוק את הרישום של '+name+'?\n\nפעולה זו אינה ניתנת לביטול!')){
+    return;
+  }
+  try{
+    await db.ref('registrations/'+id).remove();
+    allRegs=allRegs.filter(function(r){return r.id!==id;});
+    loadDashboard();
+  }catch(e){
+    alert('שגיאה במחיקה: '+e.message);
+  }
+}
 function showMsg(id,cls,txt){
   var el=document.getElementById(id);if(!el)return;
   el.innerHTML='<div class="al '+cls+'">'+txt+'</div>';
   setTimeout(function(){if(el)el.innerHTML=''},3000);
 }
+
 
 // ══════════════════════════════════════════════════════
 // STUDENT CARD
@@ -1086,7 +1253,10 @@ function printCard(id){
         <div>
           <div style="font-size:1.25rem;font-weight:800">${r.stFN||''} ${r.stLN||''}</div>
           <div style="font-size:.82rem;opacity:.8">ת"ז: ${r.stId||'—'} | ת.לידה: ${r.stBirth||'—'}</div>
-          <div style="margin-top:4px">${badge(r.status)}</div>
+          <div style="margin-top:4px">
+  ${badge(r.status)}
+  ${r.assignedClass?'<span style="background:var(--gold);color:var(--blue);padding:2px 10px;border-radius:12px;font-size:.78rem;font-weight:700;margin-right:6px">כיתה '+r.assignedClass+'</span>':''}
+</div>
         </div>
       </div>
       <div class="scard-body">
@@ -1099,7 +1269,6 @@ function printCard(id){
         <div class="scard-fi"><label>קופ"ח</label>${r.hmo||'—'}</div>
         <div class="scard-fi"><label>מצב רפואי</label>${r.hasMedical||'לא'}</div>
         <div class="scard-fi"><label>עצמאות</label>${r.independence||'—'}</div>
-        <div class="scard-fi"><label>תל"א</label>${r.hasIEP||'לא'}</div>
       </div>
       ${skills?`<div class="scard-note scard-int" style="margin-top:8px">✅ <strong>מיומנויות:</strong> ${skills}</div>`:''}
       ${r.hasMedical==='כן'&&r.medCond?`<div class="scard-note scard-med" style="margin-top:6px">⚠️ <strong>רפואי:</strong> ${r.medCond}</div>`:''}
@@ -1112,6 +1281,432 @@ function printCard(id){
     </div>`;
   openModal('modCard');
 }
+// ══ MUNICIPALITY IMPORT ══
+
+function showMuniUpload(){
+  document.getElementById('muniUploadArea').innerHTML=`
+    <div style="background:#fff;border:2px solid var(--gold);border-radius:14px;
+      padding:22px;margin-bottom:20px">
+      <h3 style="color:var(--blue);font-size:1rem;font-weight:700;margin-bottom:6px">
+        📤 ייבוא רשימת עירייה
+      </h3>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:4px">
+        סדר העמודות הנדרש:
+      </p>
+      <div style="background:#f6f8ff;border-radius:8px;padding:10px 14px;
+        font-size:.78rem;color:var(--blue);margin-bottom:14px;line-height:2">
+        <strong>A</strong> = ת"ז &nbsp;|&nbsp;
+        <strong>B</strong> = שם משפחה &nbsp;|&nbsp;
+        <strong>C</strong> = שם פרטי &nbsp;|&nbsp;
+        <strong>D</strong> = מגדר &nbsp;|&nbsp;
+        <strong>E</strong> = שם אב &nbsp;|&nbsp;
+        <strong>F</strong> = נייד אב &nbsp;|&nbsp;
+        <strong>G</strong> = דוא"ל אב &nbsp;|&nbsp;
+        <strong>H</strong> = שם אם &nbsp;|&nbsp;
+        <strong>I</strong> = נייד אם &nbsp;|&nbsp;
+        <strong>J</strong> = דוא"ל אם
+      </div>
+      <div style="border:2px dashed var(--border);border-radius:10px;padding:20px;
+        text-align:center;cursor:pointer;background:#fafbfc"
+        onclick="document.getElementById('muniFileInput').click()">
+        <div style="font-size:1.8rem;margin-bottom:6px">📊</div>
+        <p style="font-size:.85rem;color:var(--muted)">
+          לחצו לבחירת קובץ Excel<br>
+          <small>שורה 1 = כותרות, שורה 2 ואילך = נתונים</small>
+        </p>
+        <input type="file" id="muniFileInput" accept=".xlsx,.xls"
+          style="display:none" onchange="processMuniFile(this)">
+      </div>
+      <div id="muniImportResult" style="margin-top:12px"></div>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm"
+          onclick="document.getElementById('muniUploadArea').innerHTML=''">
+          סגור
+        </button>
+      </div>
+    </div>`;
+}
+
+async function processMuniFile(input){
+  var file=input.files[0];
+  if(!file)return;
+  var resultEl=document.getElementById('muniImportResult');
+  resultEl.innerHTML='<div class="al al-info">⏳ מעבד קובץ...</div>';
+
+  try{
+    // קריאת הקובץ
+    var data=await file.arrayBuffer();
+    var wb=XLSX.read(data,{type:'array'});
+    var ws=wb.Sheets[wb.SheetNames[0]];
+    var rows=XLSX.utils.sheet_to_json(ws,{header:1});
+
+    // דילוג על שורת כותרות
+    var dataRows=rows.slice(1).filter(function(r){return r[0];});
+
+    if(dataRows.length===0){
+      resultEl.innerHTML='<div class="al al-err">לא נמצאו נתונים בקובץ</div>';
+      return;
+    }
+
+    // שמירה ב-Firebase
+    var imported=0;
+    var skipped=0;
+    var updates={};
+
+    dataRows.forEach(function(row){
+      var tz=String(row[0]||'').trim();
+      if(!tz){skipped++;return;}
+
+      updates['municipalityList/'+tz]={
+        stId:tz,
+        stLN:String(row[1]||'').trim(),
+        stFN:String(row[2]||'').trim(),
+        stGender:String(row[3]||'').trim(),
+        p1FN:String(row[4]||'').trim(),
+        p1Ph:String(row[5]||'').trim(),
+        p1Email:String(row[6]||'').trim(),
+        p2FN:String(row[7]||'').trim(),
+        p2Ph:String(row[8]||'').trim(),
+        p2Email:String(row[9]||'').trim(),
+        importedAt:firebase.database.ServerValue.TIMESTAMP,
+        hadInterview:false
+      };
+      imported++;
+    });
+
+    await db.ref().update(updates);
+
+    resultEl.innerHTML=
+      '<div class="al al-ok">✅ יובאו '+imported+' תלמידים בהצלחה!</div>'+
+      (skipped?'<div class="al al-warn">⚠️ '+skipped+' שורות דולגו (חסרה ת"ז)</div>':'');
+
+    // רענון הדשבורד
+    setTimeout(function(){loadDashboard();},1500);
+
+  }catch(e){
+    resultEl.innerHTML='<div class="al al-err">שגיאה: '+e.message+'</div>';
+  }
+}
+// ══ TRACKING TABLE ══
+async function showTracking(){
+  document.getElementById('adminContent').innerHTML=
+    '<div class="loading"><div class="spin"></div><br>טוען נתונים...</div>';
+
+  try{
+    // טעינת שתי הרשימות במקביל
+    var [regSnap, muniSnap] = await Promise.all([
+      db.ref('registrations').once('value'),
+      db.ref('municipalityList').once('value')
+    ]);
+
+    var regs=regSnap.val()||{};
+    var munis=muniSnap.val()||{};
+
+    // בניית מפה משולבת לפי ת"ז
+    var combined={};
+
+    // הוספת כל רישומי העירייה
+    Object.entries(munis).forEach(function([tz,m]){
+      combined[tz]={
+        stId:tz,
+        name:(m.stFN||'')+' '+(m.stLN||''),
+        muniApproved:true,
+        filledForm:false,
+        hadInterview:m.hadInterview||false,
+        muniKey:tz,
+        regKey:null
+      };
+    });
+
+    // הוספת / שילוב רישומי הורים
+    Object.entries(regs).forEach(function([key,r]){
+      var tz=r.stId||'';
+      if(!tz)return;
+      if(combined[tz]){
+        // קיים בעירייה – עדכון
+        combined[tz].filledForm=true;
+        combined[tz].regKey=key;
+        if(r.stFN)combined[tz].name=(r.stFN||'')+' '+(r.stLN||'');
+      }else{
+        // לא קיים בעירייה – רק מילא טופס
+        combined[tz]={
+          stId:tz,
+          name:(r.stFN||'')+' '+(r.stLN||''),
+          muniApproved:false,
+          filledForm:true,
+          hadInterview:false,
+          muniKey:null,
+          regKey:key
+        };
+      }
+    });
+
+    var list=Object.values(combined);
+    list.sort(function(a,b){return a.name.localeCompare(b.name,'he');});
+
+    // סטטיסטיקות
+    var total=list.length;
+    var muniOk=list.filter(function(x){return x.muniApproved;}).length;
+    var formOk=list.filter(function(x){return x.filledForm;}).length;
+    var intervOk=list.filter(function(x){return x.hadInterview;}).length;
+    var allOk=list.filter(function(x){return x.muniApproved&&x.filledForm&&x.hadInterview;}).length;
+
+    document.getElementById('adminContent').innerHTML=
+      '<div class="atop">'+
+      '<button class="btn btn-outline" onclick="loadDashboard()">← חזרה לרשימה</button>'+
+      '<h2>📊 טבלת מעקב</h2>'+
+      '</div>'+
+
+      // סטטיסטיקות
+      '<div class="stats">'+
+      '<div class="stat"><div class="num">'+total+'</div><div class="lbl">סה"כ תלמידים</div></div>'+
+      '<div class="stat"><div class="num" style="color:#2e7d32">'+muniOk+'</div><div class="lbl">אישור עירייה</div></div>'+
+      '<div class="stat"><div class="num" style="color:#1565c0">'+formOk+'</div><div class="lbl">מילאו טפסים</div></div>'+
+      '<div class="stat"><div class="num" style="color:#e65100">'+intervOk+'</div><div class="lbl">התראיינו</div></div>'+
+      '<div class="stat"><div class="num" style="color:#6a1b9a">'+allOk+'</div><div class="lbl">השלימו הכל</div></div>'+
+      '</div>'+
+
+      // סינון
+      '<div class="filters" style="margin-bottom:14px">'+
+      '<input id="trkSearch" placeholder="🔍 חיפוש שם או ת"ז..." oninput="filterTracking()">'+
+      '<select id="trkFilter" onchange="filterTracking()">'+
+      '<option value="">הצג הכל</option>'+
+      '<option value="missing_form">חסר טופס</option>'+
+      '<option value="missing_muni">חסר אישור עירייה</option>'+
+      '<option value="missing_interview">חסר ראיון</option>'+
+      '<option value="complete">השלימו הכל ✅</option>'+
+      '</select>'+
+      '</div>'+
+
+      // טבלה
+      '<div class="tbl"><table>'+
+      '<thead><tr>'+
+      '<th>שם תלמיד/ה</th>'+
+      '<th>ת"ז</th>'+
+      '<th style="text-align:center">אישור עירייה</th>'+
+      '<th style="text-align:center">מילא/ה טפסים</th>'+
+      '<th style="text-align:center">ראיון</th>'+
+      '<th></th>'+
+      '</tr></thead>'+
+      '<tbody id="trkBody"></tbody>'+
+      '</table></div>';
+
+    // שמירת הנתונים לסינון
+    window._trackingData=list;
+    filterTracking();
+
+  }catch(e){
+    document.getElementById('adminContent').innerHTML=
+      '<div class="al al-err">שגיאה: '+e.message+'</div>';
+  }
+}
+
+function filterTracking(){
+  var q=(document.getElementById('trkSearch')?.value||'').toLowerCase();
+  var f=document.getElementById('trkFilter')?.value||'';
+  var list=window._trackingData||[];
+
+  list=list.filter(function(x){
+    var nm=x.name.toLowerCase();
+    var matchQ=!q||nm.includes(q)||(x.stId||'').includes(q);
+    var matchF=true;
+    if(f==='missing_form')matchF=!x.filledForm;
+    if(f==='missing_muni')matchF=!x.muniApproved;
+    if(f==='missing_interview')matchF=!x.hadInterview;
+    if(f==='complete')matchF=x.muniApproved&&x.filledForm&&x.hadInterview;
+    return matchQ&&matchF;
+  });
+
+  var tb=document.getElementById('trkBody');if(!tb)return;
+  if(!list.length){
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--muted)">לא נמצאו תלמידים</td></tr>';
+    return;
+  }
+
+  tb.innerHTML=list.map(function(x){
+    var tick=function(v){return v?
+      '<span style="color:#2e7d32;font-size:1.2rem">✅</span>':
+      '<span style="color:#e0e0e0;font-size:1.2rem">⭕</span>';};
+    var link='';
+    if(x.regKey)link='<button class="btn btn-outline btn-sm" onclick="viewReg(\''+x.regKey+'\')">👁 טופס</button>';
+    return '<tr>'+
+      '<td><strong>'+x.name+'</strong></td>'+
+      '<td style="font-size:.8rem">'+x.stId+'</td>'+
+      '<td style="text-align:center">'+tick(x.muniApproved)+'</td>'+
+      '<td style="text-align:center">'+tick(x.filledForm)+'</td>'+
+      '<td style="text-align:center">'+
+        '<span onclick="toggleInterview(\''+x.stId+'\',\''+x.muniKey+'\','+(x.hadInterview?'true':'false')+')" '+
+        'style="cursor:pointer" title="לחץ לשינוי">'+tick(x.hadInterview)+'</span>'+
+      '</td>'+
+      '<td>'+link+'</td>'+
+      '</tr>';
+  }).join('');
+}
+
+async function toggleInterview(stId, muniKey, current){
+  var newVal=!current;
+  try{
+    if(muniKey){
+      await db.ref('municipalityList/'+muniKey+'/hadInterview').set(newVal);
+    }
+    // עדכון מקומי
+    var item=window._trackingData.find(function(x){return x.stId===stId;});
+    if(item)item.hadInterview=newVal;
+    filterTracking();
+  }catch(e){alert('שגיאה: '+e.message);}
+}
+// ══ CLASS ASSIGNMENT IMPORT ══
+function showClassUpload(){
+  document.getElementById('muniUploadArea').innerHTML=`
+    <div style="background:#fff;border:2px solid var(--blue);border-radius:14px;
+      padding:22px;margin-bottom:20px">
+      <h3 style="color:var(--blue);font-size:1rem;font-weight:700;margin-bottom:6px">
+        🏫 ייבוא שיבוץ כיתות
+      </h3>
+      <div style="background:#f6f8ff;border-radius:8px;padding:10px 14px;
+        font-size:.78rem;color:var(--blue);margin-bottom:14px;line-height:2">
+        <strong>A</strong> = ת"ז &nbsp;|&nbsp;
+        <strong>B</strong> = כיתה (לדוגמה: א1, א2, א3...)
+      </div>
+      <div style="border:2px dashed var(--border);border-radius:10px;padding:20px;
+        text-align:center;cursor:pointer;background:#fafbfc"
+        onclick="document.getElementById('classFileInput').click()">
+        <div style="font-size:1.8rem;margin-bottom:6px">📊</div>
+        <p style="font-size:.85rem;color:var(--muted)">
+          לחצו לבחירת קובץ Excel<br>
+          <small>עמודה A = ת"ז, עמודה B = כיתה</small>
+        </p>
+        <input type="file" id="classFileInput" accept=".xlsx,.xls"
+          style="display:none" onchange="processClassFile(this)">
+      </div>
+      <div id="classImportResult" style="margin-top:12px"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px"
+        onclick="document.getElementById('muniUploadArea').innerHTML=''">
+        סגור
+      </button>
+    </div>`;
+}
+
+async function processClassFile(input){
+  var file=input.files[0];
+  if(!file)return;
+  var resultEl=document.getElementById('classImportResult');
+  resultEl.innerHTML='<div class="al al-info">⏳ מעבד קובץ...</div>';
+  try{
+    var data=await file.arrayBuffer();
+    var wb=XLSX.read(data,{type:'array'});
+    var ws=wb.Sheets[wb.SheetNames[0]];
+    var rows=XLSX.utils.sheet_to_json(ws,{header:1});
+    var dataRows=rows.slice(1).filter(function(r){return r[0]&&r[1];});
+
+    if(!dataRows.length){
+      resultEl.innerHTML='<div class="al al-err">לא נמצאו נתונים בקובץ</div>';
+      return;
+    }
+
+    var updated=0;
+    var notFound=[];
+
+    for(var i=0;i<dataRows.length;i++){
+      var tz=String(dataRows[i][0]||'').trim();
+      var cls=String(dataRows[i][1]||'').trim();
+      if(!tz||!cls)continue;
+
+      // חיפוש ברישומים לפי ת"ז
+      var snap=await db.ref('registrations')
+        .orderByChild('stId').equalTo(tz).once('value');
+      var val=snap.val();
+
+      if(val){
+        var key=Object.keys(val)[0];
+        await db.ref('registrations/'+key).update({assignedClass:cls});
+        // עדכון מקומי
+        var r=allRegs.find(function(x){return x.stId===tz;});
+        if(r)r.assignedClass=cls;
+        updated++;
+      }else{
+        notFound.push(tz);
+      }
+    }
+
+    var html='<div class="al al-ok">✅ עודכנו '+updated+' תלמידים עם שיבוץ כיתה</div>';
+    if(notFound.length)
+      html+='<div class="al al-warn">⚠️ לא נמצאו ברישום: '+notFound.join(', ')+'</div>';
+    resultEl.innerHTML=html;
+
+  }catch(e){
+    resultEl.innerHTML='<div class="al al-err">שגיאה: '+e.message+'</div>';
+  }
+}
+// ══ PRINT ALL INTERVIEWED ══
+function printAllInterviewed(){
+  // סינון רק מרואיינים
+  var interviewed=allRegs.filter(function(r){
+    return r.status==='ראיון נקבע'||r.ivDate||r.ivNotes;
+  });
+
+  if(!interviewed.length){
+    alert('לא נמצאו מרואיינים. ודאי שסטטוס הרישום הוא "ראיון נקבע" או שיש הערות ראיון.');
+    return;
+  }
+
+  var html=interviewed.map(function(r,i){
+    var ini=(r.stFN?.[0]||'')+(r.stLN?.[0]||'');
+    var skills=['skLetters:אותיות','skName:כתיבת שם','skCount:ספירה',
+      'skFocus:ריכוז','skPencil:אחיזת עיפרון','skRead:קריאה']
+      .filter(function(s){return r[s.split(':')[0]];})
+      .map(function(s){return s.split(':')[1];}).join(', ');
+
+    var isLast=(i===interviewed.length-1);
+
+    return '<div class="'+(isLast?'':'print-break')+'" style="margin-bottom:24px">'+
+      '<div class="scard" dir="rtl">'+
+      '<div class="scard-hdr">'+
+      '<div class="savatar">'+ini+'</div>'+
+      '<div>'+
+      '<div style="font-size:1.2rem;font-weight:800">'+(r.stFN||'')+' '+(r.stLN||'')+'</div>'+
+      '<div style="font-size:.8rem;opacity:.8">'+
+        'ת"ז: '+(r.stId||'—')+' | ת.לידה: '+(r.stBirth||'—')+
+        (r.assignedClass?' | <strong>כיתה '+r.assignedClass+'</strong>':'')+
+      '</div>'+
+      '<div style="margin-top:4px">'+badge(r.status)+'</div>'+
+      '</div></div>'+
+      '<div class="scard-body">'+
+      '<div class="scard-fi"><label>גן מזין</label>'+(r.garden||'—')+'</div>'+
+      '<div class="scard-fi"><label>מין</label>'+(r.stGender||'—')+'</div>'+
+      '<div class="scard-fi"><label>הורה א׳</label>'+(r.p1FN||'')+' '+(r.p1LN||'')+'</div>'+
+      '<div class="scard-fi"><label>טלפון</label>'+(r.p1Ph||'—')+'</div>'+
+      (!r.noP2?'<div class="scard-fi"><label>הורה ב׳</label>'+(r.p2FN||'')+' '+(r.p2LN||'')+'</div>':'')+
+      '<div class="scard-fi"><label>חירום</label>'+(r.emgPh||'—')+' ('+(r.emgName||'—')+')</div>'+
+      '<div class="scard-fi"><label>כתובת</label>'+(r.street||'')+' '+(r.houseN||'')+', '+(r.city||'')+'</div>'+
+      '<div class="scard-fi"><label>קופ"ח</label>'+(r.hmo||'—')+'</div>'+
+      '<div class="scard-fi"><label>עצמאות</label>'+(r.independence||'—')+'</div>'+
+      '<div class="scard-fi"><label>תמונות</label>'+(r.cPhoto||'—')+'</div>'+
+      '</div>'+
+      (skills?'<div class="scard-note scard-int">✅ <strong>מיומנויות:</strong> '+skills+'</div>':'')+
+      (r.hasMedical==='כן'&&r.medCond?'<div class="scard-note scard-med">⚠️ <strong>רפואי:</strong> '+r.medCond+'</div>':'')+
+      (r.friend1FN?'<div class="scard-note" style="background:#f3e5f5;margin-top:4px">👫 <strong>שיבוץ מבוקש:</strong> '+
+        [r.friend1FN+' '+(r.friend1LN||''),
+         r.friend2FN?r.friend2FN+' '+(r.friend2LN||''):'',
+         r.friend3FN?r.friend3FN+' '+(r.friend3LN||''):'']
+        .filter(Boolean).join(' | ')+'</div>':'')+
+      (r.ivNotes?'<div class="scard-note scard-int" style="margin-top:4px">📝 <strong>הערות ראיון:</strong> '+r.ivNotes+'</div>':'')+
+      '<div style="margin-top:8px;text-align:center;font-size:.66rem;color:#aaa">'+
+        'בית ספר אביגור | הופק: '+new Date().toLocaleDateString('he-IL')+
+      '</div>'+
+      '</div></div>';
+  }).join('');
+
+  document.getElementById('printAllArea').innerHTML=
+    '<div class="al al-info" style="margin-bottom:14px">'+
+    '🖨️ נמצאו <strong>'+interviewed.length+'</strong> מרואיינים. לחצו "הדפס" למעלה.</div>'+
+    html;
+
+  openModal('modPrintAll');
+}
 </script>
 </body>
 </html>
+
+
+
