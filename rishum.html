@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>רישום לשכבת ז׳ תשפ"ז – אביגור</title>
+
+  <!-- Google Fonts: Heebo (Hebrew-first, beautiful) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDK v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════ */
+    :root {
+      --blue:        #4A90D9;
+      --blue-mid:    #5BA3E8;
+      --blue-light:  #EBF4FF;
+      --blue-border: #C2DCF8;
+      --green:       #52B788;
+      --green-light: #E8F7F1;
+      --green-border:#B7DFCC;
+      --amber:       #F5A623;
+      --amber-light: #FFF8EC;
+      --red:         #E05C5C;
+      --red-light:   #FFF1F1;
+      --bg:          #F4F7FB;
+      --surface:     #FFFFFF;
+      --text:        #1A2A3A;
+      --text-mid:    #4A5F74;
+      --text-soft:   #8A9BB0;
+      --border:      #DDE6F0;
+      --shadow-sm:   0 2px 8px rgba(74,144,217,.08);
+      --shadow-md:   0 4px 20px rgba(74,144,217,.13);
+      --radius-sm:   10px;
+      --radius-md:   16px;
+      --radius-lg:   24px;
+    }
+
+    /* ═══════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Heebo', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      direction: rtl;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    /* ═══════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════ */
+    .header {
+      background: linear-gradient(140deg, #4A90D9 0%, #52B788 100%);
+      color: #fff;
+      padding: 32px 20px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='10'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .header-inner { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+
+    /* לוגו — הנח logo.png באותה תיקייה כמו קובץ ה-HTML */
+    .header-logo {
+      height: 72px;
+      width: auto;
+      margin-bottom: 14px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .header h1 {
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+      text-shadow: 0 1px 4px rgba(0,0,0,.15);
+    }
+    .header-year {
+      font-size: 1rem;
+      font-weight: 500;
+      opacity: 0.88;
+      margin-bottom: 16px;
+    }
+    .header-desc {
+      font-size: 0.92rem;
+      font-weight: 400;
+      opacity: 0.92;
+      line-height: 1.7;
+      max-width: 480px;
+      margin: 0 auto;
+      background: rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 12px 18px;
+    }
+
+    /* ═══════════════════════════════════════════
+       LAYOUT
+    ═══════════════════════════════════════════ */
+    .container {
+      max-width: 640px;
+      margin: 28px auto 0;
+      padding: 0 16px 60px;
+    }
+    .container.wide { max-width: 1040px; }
+
+    /* ═══════════════════════════════════════════
+       CARD
+    ═══════════════════════════════════════════ */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      padding: 24px 26px;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      animation: fadeSlide .25s ease both;
+    }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .card-title-bar {
+      display: inline-block;
+      width: 4px; height: 20px;
+      background: var(--blue);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       FORM ELEMENTS
+    ═══════════════════════════════════════════ */
+    .form-group { margin-bottom: 16px; }
+
+    label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-mid);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-family: 'Heebo', Arial, sans-serif;
+      direction: rtl;
+      background: #FAFCFF;
+      color: var(--text);
+      transition: border-color .18s, box-shadow .18s;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--blue-mid);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(74,144,217,.12);
+    }
+    textarea { min-height: 88px; resize: vertical; }
+
+    input:disabled {
+      background: #F0F4F8;
+      color: var(--text-soft);
+      cursor: not-allowed;
+    }
+
+    /* ═══════════════════════════════════════════
+       BUTTONS
+    ═══════════════════════════════════════════ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 11px 24px;
+      border: 2px solid transparent;
+      border-radius: var(--radius-sm);
+      font-size: 0.97rem;
+      font-weight: 700;
+      font-family: 'Heebo', Arial, sans-serif;
+      cursor: pointer;
+      transition: all .18s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(.97); }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
+    .btn-primary:hover { background: #3A7EC4; border-color: #3A7EC4; }
+
+    .btn-green {
+      background: var(--green);
+      color: #fff;
+      width: 100%;
+      padding: 14px;
+      font-size: 1.05rem;
+      border-radius: var(--radius-sm);
+    }
+    .btn-green:hover { background: #42A276; }
+
+    .btn-outline {
+      background: transparent;
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+    .btn-outline:hover { background: var(--blue-light); }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-mid);
+    }
+    .btn-ghost:hover { background: var(--bg); }
+
+    .btn-sm { padding: 7px 16px; font-size: 0.85rem; }
+    .btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
+    .btn-danger:hover { background: #C84444; }
+
+    /* ═══════════════════════════════════════════
+       ID ROW
+    ═══════════════════════════════════════════ */
+    .id-row { display: flex; gap: 10px; }
+    .id-row input { flex: 1; }
+
+    /* ═══════════════════════════════════════════
+       STUDENT FOUND BOX
+    ═══════════════════════════════════════════ */
+    .student-found-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--blue-light);
+      border: 2px solid var(--blue-border);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      margin-top: 14px;
+      animation: fadeSlide .2s ease;
+    }
+    .s-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .s-name { font-weight: 700; font-size: 1.05rem; color: var(--text); }
+    .s-class { font-size: 0.84rem; color: var(--text-mid); margin-top: 2px; }
+
+    /* ═══════════════════════════════════════════
+       UPDATE BANNER
+    ═══════════════════════════════════════════ */
+    .update-banner {
+      background: var(--amber-light);
+      border: 2px solid #F5A62355;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+      animation: fadeSlide .2s ease;
+    }
+    .update-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 1px; }
+    .update-banner h3 { font-size: 0.95rem; font-weight: 700; color: #8A5200; margin-bottom: 3px; }
+    .update-banner p  { font-size: 0.85rem; color: #A06010; line-height: 1.5; }
+
+    /* ═══════════════════════════════════════════
+       AUTOCOMPLETE
+    ═══════════════════════════════════════════ */
+    .autocomplete-wrapper { position: relative; }
+
+    .ac-dropdown {
+      position: absolute;
+      top: calc(100% + 2px);
+      right: 0; left: 0;
+      background: #fff;
+      border: 2px solid var(--blue-mid);
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      max-height: 230px;
+      overflow-y: auto;
+      z-index: 200;
+      box-shadow: 0 8px 20px rgba(74,144,217,.14);
+    }
+    .ac-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.92rem;
+      border-bottom: 1px solid var(--border);
+      transition: background .12s;
+    }
+    .ac-item:hover { background: var(--blue-light); }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-badge {
+      background: var(--blue-light);
+      color: var(--blue);
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+    .ac-none { padding: 12px 15px; color: var(--text-soft); font-size: 0.9rem; }
+
+    /* ═══════════════════════════════════════════
+       FRIENDS CHIPS
+    ═══════════════════════════════════════════ */
+    .friends-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+
+    .friend-chip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--green-light);
+      border: 1.5px solid var(--green-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      animation: chipIn .18s ease;
+    }
+    @keyframes chipIn {
+      from { opacity: 0; transform: translateX(8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .chip-left  { display: flex; align-items: center; gap: 11px; }
+    .chip-num {
+      width: 27px; height: 27px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .chip-name { font-weight: 700; font-size: 0.94rem; color: var(--text); }
+    .chip-class { font-size: 0.78rem; color: var(--text-mid); margin-top: 1px; }
+    .chip-remove {
+      background: none; border: none;
+      color: var(--text-soft);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 3px 5px;
+      border-radius: 6px;
+      transition: color .15s;
+    }
+    .chip-remove:hover { color: var(--red); }
+
+    .friends-hint {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ═══════════════════════════════════════════
+       MESSAGES
+    ═══════════════════════════════════════════ */
+    .msg {
+      padding: 11px 15px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 14px;
+      animation: fadeSlide .18s ease;
+    }
+    .msg-success { background: var(--green-light);  border: 1.5px solid var(--green-border);  color: #1A6040; }
+    .msg-error   { background: var(--red-light);    border: 1.5px solid #F0A0A0;              color: #8B0000; }
+    .msg-warn    { background: var(--amber-light);  border: 1.5px solid #F5C060;              color: #7A4A00; }
+
+    /* Confirm no-friends dialog */
+    .confirm-box {
+      background: var(--amber-light);
+      border: 2px solid var(--amber);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      margin-bottom: 14px;
+    }
+    .confirm-box p { font-size: 0.9rem; color: #6B3800; margin-bottom: 12px; }
+    .confirm-box .btn-row { display: flex; gap: 10px; }
+
+    /* ═══════════════════════════════════════════
+       SUCCESS SCREEN
+    ═══════════════════════════════════════════ */
+    .success-card {
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .success-icon { font-size: 3.5rem; margin-bottom: 12px; }
+    .success-card h2 { color: var(--green); font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+    .success-card p  { color: var(--text-mid); font-size: 0.95rem; line-height: 1.7; }
+
+    /* ═══════════════════════════════════════════
+       ADMIN LINK
+    ═══════════════════════════════════════════ */
+    .admin-link { text-align: center; margin-top: 6px; margin-bottom: 30px; }
+    .admin-link a {
+      color: var(--text-soft);
+      font-size: 0.78rem;
+      text-decoration: none;
+      transition: color .15s;
+    }
+    .admin-link a:hover { color: var(--blue); }
+
+    /* ═══════════════════════════════════════════
+       ADMIN PANEL
+    ═══════════════════════════════════════════ */
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .admin-header h2 { font-size: 1.2rem; font-weight: 800; color: var(--text); }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 14px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-num { font-size: 2.1rem; font-weight: 900; line-height: 1; }
+    .stat-lbl { font-size: 0.78rem; color: var(--text-soft); margin-top: 4px; font-weight: 600; }
+    .stat-blue  .stat-num { color: var(--blue); }
+    .stat-green .stat-num { color: var(--green); }
+    .stat-red   .stat-num { color: var(--red); }
+
+    /* Progress bar */
+    .progress-wrap { margin-bottom: 20px; }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.82rem; color: var(--text-soft); margin-bottom: 6px; font-weight: 600;
+    }
+    .progress-bar {
+      height: 10px; background: var(--border);
+      border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      border-radius: 99px;
+      transition: width .4s ease;
+    }
+
+    /* Filters */
+    .filter-row {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      align-items: center; margin-bottom: 16px;
+    }
+    .filter-lbl { font-size: 0.82rem; color: var(--text-soft); font-weight: 700; }
+    .f-btn {
+      padding: 6px 15px;
+      border-radius: 20px;
+      border: 2px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 700;
+      font-family: 'Heebo', Arial, sans-serif;
+      color: var(--text-mid);
+      transition: all .15s;
+    }
+    .f-btn:hover    { border-color: var(--blue); color: var(--blue); }
+    .f-btn.active   { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .f-btn.missing-btn.active { background: var(--amber); border-color: var(--amber); color: #fff; }
+    .export-btn { margin-right: auto; }
+
+    /* Table */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+    th {
+      background: var(--blue-light);
+      color: var(--blue);
+      padding: 11px 13px;
+      text-align: right;
+      font-weight: 700;
+      white-space: nowrap;
+      border-bottom: 2px solid var(--blue-border);
+    }
+    td {
+      padding: 10px 13px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--text);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #FAFCFF; }
+    tr.row-missing td { background: #FFF6F6; }
+    tr.row-missing td:first-child { border-right: 3px solid var(--red); }
+    tr.row-done td:first-child { border-right: 3px solid var(--green); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-done    { background: var(--green-light); color: #1A6040; }
+    .badge-missing { background: var(--red-light);   color: #8B0000; }
+
+    .friend-cell small { color: var(--text-soft); font-size: 0.78rem; }
+
+    /* Admin login */
+    .admin-login-wrap {
+      max-width: 340px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 10px 0 20px;
+    }
+    .admin-login-wrap h2 { font-size: 1.15rem; font-weight: 800; color: var(--text); margin-bottom: 18px; }
+    .admin-login-wrap .lock { font-size: 2.5rem; margin-bottom: 10px; }
+
+    /* ═══════════════════════════════════════════
+       UTILITY
+    ═══════════════════════════════════════════ */
+    .hidden { display: none !important; }
+    .mt-12 { margin-top: 12px; }
+    .mt-20 { margin-top: 20px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    @media (max-width: 560px) {
+      .card { padding: 18px 16px; }
+      .header h1 { font-size: 1.5rem; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .stat-num { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════ -->
+<div class="header">
+  <div class="header-inner">
+    <!--
+      לוגו: שים את קובץ logo.png באותה תיקייה שבה נמצא ה-HTML.
+      אם הקובץ לא נמצא — הלוגו יוסתר אוטומטית.
+    -->
+    <img src="logo.png" alt="לוגו בית ספר אביגור" class="header-logo"
+         onerror="this.style.display='none'">
+    <h1>רישום לשכבת ז׳ תשפ"ז</h1>
+    <div class="header-year">בית ספר אביגור — רמת גן</div>
+    <div class="header-desc">
+      לקראת שנת הלימודים הבאה, שכבת ו׳ תעבור ערבוב כיתות.<br>
+      ניתן לציין <strong>עד 3 תלמידים</strong> שתרצו שילדכם יהיה איתם בכיתה החדשה.<br>
+      בית הספר ישתדל לשבץ לפחות חבר אחד מהרשימה.
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     REGISTRATION SECTION
+════════════════════════════════════════════ -->
+<div class="container" id="regSection">
+
+  <!-- Step 1: ID Lookup -->
+  <div class="card" id="cardId">
+    <div class="card-title">
+      <span class="card-title-bar"></span>
+      שלב 1 — זיהוי התלמיד/ה
+    </div>
+    <div class="form-group">
+      <label for="idInput">תעודת זהות של התלמיד/ה</label>
+      <div class="id-row">
+        <input type="text" id="idInput" placeholder="הזינו מספר ת.ז." maxlength="10" inputmode="numeric">
+        <button class="btn btn-primary" id="lookupBtn" onclick="lookupStudent()">חיפוש</button>
+      </div>
+    </div>
+    <div id="idMsg"></div>
+    <div id="studentBox" class="hidden">
+      <div class="student-found-box">
+        <div class="s-avatar" id="sAvatar"></div>
+        <div>
+          <div class="s-name" id="sName"></div>
+          <div class="s-class" id="sClass"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update banner -->
+  <div class="update-banner hidden" id="updateBanner">
+    <div class="update-icon">⚠️</div>
+    <div>
+      <h3>נמצא רישום קיים לתלמיד/ה זו</h3>
+      <p>הרישום יעודכן. הבחירות הקיימות מוצגות למטה — שנו לפי הצורך ושלחו מחדש.</p>
+    </div>
+  </div>
+
+  <!-- Step 2: Friends -->
+  <div class="card hidden" id="cardFriends">
+    <div class="card-title">
+      <span class="card-title-bar"></span>
+      שלב 2 — בחירת חברים (עד 3)
+    </div>
+    <p style="font-size:.88rem; color:var(--text-mid); margin-bottom:16px;">
+      הקלידו שם פרטי או שם משפחה ובחרו מהרשימה המוצגת. ניתן לבחור תלמידים מכל כיתה.
+    </p>
+
+    <div class="form-group">
+      <label for="friendSearch">חיפוש תלמיד/ה לבחירה</label>
+      <div class="autocomplete-wrapper">
+        <input type="text" id="friendSearch"
+               placeholder="התחילו להקליד שם..."
+               oninput="onFriendSearch()"
+               onkeydown="onSearchKey(event)"
+               autocomplete="off">
+        <div class="ac-dropdown hidden" id="acDropdown"></div>
+      </div>
+    </div>
+
+    <div class="friends-list" id="friendsList"></div>
+    <div class="friends-hint" id="friendsHint">ניתן לבחור עד 3 חברים</div>
+
+    <hr class="divider">
+
+    <div class="form-group">
+      <label for="notesInput">הערות חופשיות לצוות בית הספר (אופציונלי)</label>
+      <textarea id="notesInput" placeholder="כל הערה נוספת שתרצו להעביר לצוות..."></textarea>
+    </div>
+
+    <!-- Confirm no-friends -->
+    <div class="confirm-box hidden" id="confirmNoFriends">
+      <p>לא בחרתם אף חבר. האם ברצונכם לשלוח ללא בחירה?</p>
+      <div class="btn-row">
+        <button class="btn btn-danger btn-sm" onclick="doSubmit(true)">כן, שלח בכל זאת</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('confirmNoFriends').classList.add('hidden')">חזרה לבחירה</button>
+      </div>
+    </div>
+
+    <div id="submitMsg"></div>
+    <button class="btn btn-green" onclick="handleSubmitClick()">שליחת הרישום ✓</button>
+  </div>
+
+  <!-- Success -->
+  <div class="card hidden" id="successCard">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <h2>הרישום התקבל!</h2>
+      <p id="successText"></p>
+    </div>
+  </div>
+
+  <div class="admin-link">
+    <a href="#" onclick="showAdminSection(); return false;">כניסת צוות בית הספר</a>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     ADMIN PANEL
+════════════════════════════════════════════ -->
+<div class="container wide hidden" id="adminSection">
+
+  <!-- Login -->
+  <div class="card" id="adminLoginCard">
+    <div class="admin-login-wrap">
+      <div class="lock">🔒</div>
+      <h2>כניסת צוות בית הספר</h2>
+      <div class="form-group">
+        <input type="password" id="adminPass" placeholder="הזינו סיסמה"
+               onkeydown="if(event.key==='Enter') checkPass()">
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="checkPass()">כניסה</button>
+      <div id="adminPassMsg" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="hidden" id="adminDashboard">
+
+    <div class="admin-header">
+      <h2>📋 לוח רישומים — שכבת ז׳ תשפ"ז</h2>
+      <button class="btn btn-ghost btn-sm" onclick="location.reload()">⟵ חזרה לטופס</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card stat-blue">
+        <div class="stat-num" id="stTotal">88</div>
+        <div class="stat-lbl">תלמידים בשכבה</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-num" id="stDone">0</div>
+        <div class="stat-lbl">נרשמו</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="stat-num" id="stMissing">88</div>
+        <div class="stat-lbl">טרם נרשמו</div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>התקדמות הרישום</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Filters + export -->
+    <div class="card" style="padding:16px 20px 14px;">
+      <div class="filter-row">
+        <span class="filter-lbl">סינון:</span>
+        <button class="f-btn active" onclick="setFilter('all', this)">הכל</button>
+        <button class="f-btn" onclick="setFilter('ו1', this)">ו׳1</button>
+        <button class="f-btn" onclick="setFilter('ו2', this)">ו׳2</button>
+        <button class="f-btn" onclick="setFilter('ו3', this)">ו׳3</button>
+        <button class="f-btn missing-btn" id="missingBtn" onclick="toggleMissing(this)">חסרים בלבד</button>
+        <button class="btn btn-outline btn-sm export-btn" onclick="exportExcel()">⬇ ייצוא Excel</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>שם התלמיד/ה</th>
+              <th>כיתה</th>
+              <th>חבר/ה 1</th>
+              <th>חבר/ה 2</th>
+              <th>חבר/ה 3</th>
+              <th>הערות</th>
+              <th>סטטוס</th>
+              <th>עודכן</th>
+            </tr>
+          </thead>
+          <tbody id="adminTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────────
+   FIREBASE
+───────────────────────────────────────────── */
+const firebaseConfig = {
+  apiKey:            "AIzaSyBCYhOkXVc1a5Y0g2uXrGDnbhQpLIExzGU",
+  authDomain:        "rishum---avigoor.firebaseapp.com",
+  databaseURL:       "https://rishum---avigoor-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "rishum---avigoor",
+  storageBucket:     "rishum---avigoor.firebasestorage.app",
+  messagingSenderId: "345182342365",
+  appId:             "1:345182342365:web:403d679353db9534aa5f34",
+  measurementId:     "G-RYB20KCC46"
+};
+
+/*
+  ───────────────────────────────────────────
+  Firebase Realtime Database — כללי אבטחה
+  יש להגדיר בקונסולת Firebase את הכללים הבאים:
+  {
+    "rules": {
+      "registrations": {
+        ".read":  true,
+        ".write": true
+      }
+    }
+  }
+  ─────────────────────────────────────────── */
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ─────────────────────────────────────────────
+   STUDENT DATA — 88 תלמידים
+   (ייבוא מהקבצים אלפון_ו_1 / ו_2 / ו_3)
+───────────────────────────────────────────── */
+const STUDENTS = {
+  // ══ כיתה ו׳1 — 26 תלמידים ══
+  "222774374": { firstName:"דניאל",     lastName:"אגי",              class:"ו1" },
+  "338385420": { firstName:"ניר",       lastName:"אוברציגר",          class:"ו1" },
+  "222597924": { firstName:"אלונה",     lastName:"אמויאל",            class:"ו1" },
+  "338738867": { firstName:"נדב",       lastName:"בוזגלו",            class:"ו1" },
+  "222766826": { firstName:"ליאם",      lastName:"בינשטוק",           class:"ו1" },
+  "339037046": { firstName:"אילן",      lastName:"בית הלחמי",         class:"ו1" },
+  "222733693": { firstName:"אורין",     lastName:"בן מאיר",           class:"ו1" },
+  "221679707": { firstName:"אריאל",     lastName:"ברזילי זילבר",      class:"ו1" },
+  "338392210": { firstName:"אופיר",     lastName:"גל",                class:"ו1" },
+  "222809733": { firstName:"נטע",       lastName:"דניאל בבס",         class:"ו1" },
+  "338480569": { firstName:"אמילי",     lastName:"המיה",              class:"ו1" },
+  "339028268": { firstName:"שי",        lastName:"זידנשטיין",         class:"ו1" },
+  "223620733": { firstName:"אריאל",     lastName:"זקרי",              class:"ו1" },
+  "223320045": { firstName:"יובל",      lastName:"כהן",               class:"ו1" },
+  "334489424": { firstName:"דויד",      lastName:"מוהדב",             class:"ו1" },
+  "338240609": { firstName:"ישי",       lastName:"מועלם",             class:"ו1" },
+  "222785925": { firstName:"שון",       lastName:"מזור",              class:"ו1" },
+  "339864704": { firstName:"רומי",      lastName:"מיטל",              class:"ו1" },
+  "221625049": { firstName:"הלל",       lastName:"נוביצקי",           class:"ו1" },
+  "222722431": { firstName:"ליאן",      lastName:"נחמיאס",            class:"ו1" },
+  "340670652": { firstName:"אלין",      lastName:"נעים",              class:"ו1" },
+  "338391899": { firstName:"מאי",       lastName:"עוז",               class:"ו1" },
+  "221651573": { firstName:"לילי",      lastName:"קיציס",             class:"ו1" },
+  "221876030": { firstName:"עמית",      lastName:"רותם",              class:"ו1" },
+  "222729360": { firstName:"עדי",       lastName:"ריכטר",             class:"ו1" },
+  "338993264": { firstName:"סער",       lastName:"שמחיוף",            class:"ו1" },
+  // ══ כיתה ו׳2 — 32 תלמידים ══
+  "338738578": { firstName:"ליאל",      lastName:"אבידר",             class:"ו2" },
+  "222767527": { firstName:"מתן",       lastName:"אוחיון בורנש",      class:"ו2" },
+  "338355621": { firstName:"ארבל",      lastName:"איזנברג",           class:"ו2" },
+  "222771354": { firstName:"איה",       lastName:"אלטמן",             class:"ו2" },
+  "222809378": { firstName:"רונה",      lastName:"ארבל",              class:"ו2" },
+  "330368366": { firstName:"יהב",       lastName:"אשר",               class:"ו2" },
+  "222286114": { firstName:"ארי",       lastName:"ביטון",             class:"ו2" },
+  "223648429": { firstName:"תומר",      lastName:"בלינוב",            class:"ו2" },
+  "222771560": { firstName:"מוריה",     lastName:"בן-יאיר",           class:"ו2" },
+  "222721540": { firstName:"מאיה",      lastName:"בקרסקי",            class:"ו2" },
+  "221977374": { firstName:"אלמה",      lastName:"בר מעוז",           class:"ו2" },
+  "222778763": { firstName:"יעל",       lastName:"גולדשמיד",          class:"ו2" },
+  "339720872": { firstName:"נעמי",      lastName:"גמשי",              class:"ו2" },
+  "340317528": { firstName:"יונתן",     lastName:"הוניגספלד",         class:"ו2" },
+  "223647629": { firstName:"עמית",      lastName:"הוניגספלד",         class:"ו2" },
+  "223620832": { firstName:"דניאל",     lastName:"הורוביץ",           class:"ו2" },
+  "221684814": { firstName:"אלה הלנה",  lastName:"חמו",               class:"ו2" },
+  "222345597": { firstName:"יואב",      lastName:"ירון",              class:"ו2" },
+  "223443565": { firstName:"שחר",       lastName:"ישראל",             class:"ו2" },
+  "223638164": { firstName:"גילי מלכה", lastName:"כמליאן",            class:"ו2" },
+  "223640558": { firstName:"רוני",      lastName:"מוטליס",            class:"ו2" },
+  "222768129": { firstName:"אביב",      lastName:"מלכה",              class:"ו2" },
+  "339131948": { firstName:"שי",        lastName:"נחמיה",             class:"ו2" },
+  "222758377": { firstName:"אליה",      lastName:"ענתי",              class:"ו2" },
+  "338733363": { firstName:"תמיר יוסף", lastName:"עראמי",             class:"ו2" },
+  "223640467": { firstName:"אמיר",      lastName:"פז",                class:"ו2" },
+  "1554024265":{ firstName:"ארסמה",     lastName:"צגאי",              class:"ו2" },
+  "338985302": { firstName:"שני",       lastName:"קוגל",              class:"ו2" },
+  "222732463": { firstName:"ליה",       lastName:"רז",                class:"ו2" },
+  "339451056": { firstName:"עומר",      lastName:"רט",                class:"ו2" },
+  "222729352": { firstName:"עמית",      lastName:"ריכטר",             class:"ו2" },
+  "339484065": { firstName:"אלומה",     lastName:"שלו",               class:"ו2" },
+  // ══ כיתה ו׳3 — 30 תלמידים ══
+  "222736936": { firstName:"עידו",      lastName:"אלכסי",             class:"ו3" },
+  "338240427": { firstName:"עופרי",     lastName:"ארגון",             class:"ו3" },
+  "222721532": { firstName:"תמר",       lastName:"בקרסקי",            class:"ו3" },
+  "223671652": { firstName:"ליאן",      lastName:"גל",                class:"ו3" },
+  "338479017": { firstName:"ליאן צהלה", lastName:"גלפנד",             class:"ו3" },
+  "223430067": { firstName:"עומרי",     lastName:"דדו",               class:"ו3" },
+  "223639394": { firstName:"אסף",       lastName:"דעבול",             class:"ו3" },
+  "340317510": { firstName:"איתמר",     lastName:"הוניגספלד",         class:"ו3" },
+  "223647611": { firstName:"עופרי",     lastName:"הוניגספלד",         class:"ו3" },
+  "223637471": { firstName:"עודד",      lastName:"וודקה",             class:"ו3" },
+  "222713810": { firstName:"ליאם",      lastName:"יחזקאלי",           class:"ו3" },
+  "221799570": { firstName:"שילי רות",  lastName:"יעקבי",             class:"ו3" },
+  "222724833": { firstName:"אריאל",     lastName:"יפה",               class:"ו3" },
+  "340282987": { firstName:"רוי",       lastName:"יצחקי",             class:"ו3" },
+  "222345589": { firstName:"טל",        lastName:"ירון",              class:"ו3" },
+  "337020887": { firstName:"רומי",      lastName:"כספי",              class:"ו3" },
+  "222792269": { firstName:"רני",       lastName:"לוז",               class:"ו3" },
+  "222777203": { firstName:"דניאל",     lastName:"לוי",               class:"ו3" },
+  "222805442": { firstName:"ספיר",      lastName:"לשם",               class:"ו3" },
+  "222711368": { firstName:"נעם",       lastName:"מואלם",             class:"ו3" },
+  "338382575": { firstName:"יהב",       lastName:"מורים",             class:"ו3" },
+  "222799215": { firstName:"אמה",       lastName:"נחמיאס",            class:"ו3" },
+  "223648320": { firstName:"עידו",      lastName:"סידי יואלי",        class:"ו3" },
+  "341505725": { firstName:"שי",        lastName:"סינג",              class:"ו3" },
+  "338438625": { firstName:"דניאל",     lastName:"ענתי",              class:"ו3" },
+  "223638503": { firstName:"בן אפרים",  lastName:"עקיבא",             class:"ו3" },
+  "339467722": { firstName:"גפן",       lastName:"ציפקיס",            class:"ו3" },
+  "338711534": { firstName:"עידן",      lastName:"צפריר",             class:"ו3" },
+  "338382435": { firstName:"עדי",       lastName:"קראוסחר",           class:"ו3" },
+  "222426405": { firstName:"הראל",      lastName:"רחמים",             class:"ו3" }
+};
+
+/* ─────────────────────────────────────────────
+   STATE
+───────────────────────────────────────────── */
+let currentId      = null;
+let selectedFriends = [];
+let isUpdateMode   = false;
+let allRegs        = {};
+let filterClass    = 'all';
+let filterMissing  = false;
+
+/* ─────────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────────── */
+const fullName  = s => `${s.firstName} ${s.lastName}`;
+const classLabel = c => c.replace('ו', "ו׳");
+const fmtDate   = ts => {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleDateString('he-IL') + ' ' + d.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'});
+};
+
+/* ─────────────────────────────────────────────
+   REGISTRATION — STEP 1: ID LOOKUP
+───────────────────────────────────────────── */
+function lookupStudent() {
+  const id  = document.getElementById('idInput').value.trim();
+  const msg = document.getElementById('idMsg');
+
+  if (!id) {
+    msg.innerHTML = '<div class="msg msg-error">אנא הזינו מספר ת.ז.</div>';
+    return;
+  }
+
+  const student = STUDENTS[id];
+  if (!student) {
+    msg.innerHTML = '<div class="msg msg-error">לא נמצא תלמיד/ה עם ת.ז. זו. אנא בדקו את המספר.</div>';
+    document.getElementById('studentBox').classList.add('hidden');
+    document.getElementById('cardFriends').classList.add('hidden');
+    document.getElementById('updateBanner').classList.add('hidden');
+    return;
+  }
+
+  msg.innerHTML = '';
+  currentId = id;
+
+  document.getElementById('sAvatar').textContent = student.firstName.charAt(0);
+  document.getElementById('sName').textContent   = fullName(student);
+  document.getElementById('sClass').textContent  = `כיתה ${classLabel(student.class)}`;
+  document.getElementById('studentBox').classList.remove('hidden');
+
+  // Check for existing registration
+  db.ref(`registrations/${id}`).once('value').then(snap => {
+    const existing = snap.val();
+
+    if (existing) {
+      isUpdateMode = true;
+      selectedFriends = existing.friends || [];
+      document.getElementById('notesInput').value = existing.notes || '';
+      document.getElementById('updateBanner').classList.remove('hidden');
+    } else {
+      isUpdateMode = false;
+      selectedFriends = [];
+      document.getElementById('notesInput').value = '';
+      document.getElementById('updateBanner').classList.add('hidden');
+    }
+
+    renderFriends();
+    document.getElementById('cardFriends').classList.remove('hidden');
+    document.getElementById('friendSearch').value = '';
+    document.getElementById('acDropdown').classList.add('hidden');
+    document.getElementById('submitMsg').innerHTML = '';
+    document.getElementById('confirmNoFriends').classList.add('hidden');
+  });
+}
+
+document.getElementById('idInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') lookupStudent();
+});
+
+/* ─────────────────────────────────────────────
+   AUTOCOMPLETE
+───────────────────────────────────────────── */
+function onFriendSearch() {
+  const q    = document.getElementById('friendSearch').value.trim();
+  const drop = document.getElementById('acDropdown');
+
+  if (q.length < 2) { drop.classList.add('hidden'); return; }
+
+  const ql = q.toLowerCase();
+  const matches = Object.entries(STUDENTS)
+    .filter(([id, s]) => {
+      if (id === currentId) return false;
+      if (selectedFriends.find(f => f.id === id)) return false;
+      return `${s.firstName} ${s.lastName}`.toLowerCase().includes(ql);
+    })
+    .slice(0, 8);
+
+  if (!matches.length) {
+    drop.innerHTML = `<div class="ac-none">לא נמצאו תוצאות</div>`;
+    drop.classList.remove('hidden');
+    return;
+  }
+
+  drop.innerHTML = matches.map(([id, s]) => `
+    <div class="ac-item" onclick="selectFriend('${id}')">
+      <span>${s.firstName} ${s.lastName}</span>
+      <span class="ac-badge">${classLabel(s.class)}</span>
+    </div>
+  `).join('');
+  drop.classList.remove('hidden');
+}
+
+function onSearchKey(e) {
+  if (e.key === 'Escape') document.getElementById('acDropdown').classList.add('hidden');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.autocomplete-wrapper'))
+    document.getElementById('acDropdown').classList.add('hidden');
+});
+
+function selectFriend(id) {
+  if (selectedFriends.length >= 3) return;
+  const s = STUDENTS[id];
+  if (!s || selectedFriends.find(f => f.id === id)) return;
+
+  selectedFriends.push({ id, name: fullName(s), class: s.class });
+  document.getElementById('friendSearch').value = '';
+  document.getElementById('acDropdown').classList.add('hidden');
+  renderFriends();
+}
+
+function removeFriend(id) {
+  selectedFriends = selectedFriends.filter(f => f.id !== id);
+  renderFriends();
+}
+
+function renderFriends() {
+  const list = document.getElementById('friendsList');
+  const hint = document.getElementById('friendsHint');
+  const inp  = document.getElementById('friendSearch');
+
+  list.innerHTML = selectedFriends.map((f, i) => `
+    <div class="friend-chip">
+      <div class="chip-left">
+        <span class="chip-num">${i + 1}</span>
+        <div>
+          <div class="chip-name">${f.name}</div>
+          <div class="chip-class">כיתה ${classLabel(f.class)}</div>
+        </div>
+      </div>
+      <button class="chip-remove" onclick="removeFriend('${f.id}')" title="הסרה">×</button>
+    </div>
+  `).join('');
+
+  const rem = 3 - selectedFriends.length;
+  if (rem === 0) {
+    hint.textContent   = 'בחרתם 3 חברים — המקסימום האפשרי';
+    inp.disabled       = true;
+    inp.placeholder    = 'הגעתם למקסימום';
+  } else {
+    hint.textContent   = `ניתן לבחור עוד ${rem} חבר${rem === 1 ? '' : 'ים'}`;
+    inp.disabled       = false;
+    inp.placeholder    = 'התחילו להקליד שם...';
+  }
+}
+
+/* ─────────────────────────────────────────────
+   SUBMIT
+───────────────────────────────────────────── */
+function handleSubmitClick() {
+  document.getElementById('submitMsg').innerHTML = '';
+  if (selectedFriends.length === 0) {
+    document.getElementById('confirmNoFriends').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('confirmNoFriends').classList.add('hidden');
+  doSubmit(false);
+}
+
+function doSubmit(force) {
+  if (!currentId) return;
+  const student = STUDENTS[currentId];
+  const notes   = document.getElementById('notesInput').value.trim();
+  const msgEl   = document.getElementById('submitMsg');
+
+  document.getElementById('confirmNoFriends').classList.add('hidden');
+
+  const data = {
+    studentId:   currentId,
+    studentName: fullName(student),
+    firstName:   student.firstName,
+    lastName:    student.lastName,
+    class:       student.class,
+    friends:     selectedFriends,
+    notes:       notes,
+    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+  };
+
+  if (!isUpdateMode) {
+    data.timestamp = firebase.database.ServerValue.TIMESTAMP;
+  }
+
+  msgEl.innerHTML = '<div class="msg msg-warn">שולח...</div>';
+
+  db.ref(`registrations/${currentId}`).set(data)
+    .then(() => {
+      ['cardId','cardFriends','updateBanner'].forEach(id =>
+        document.getElementById(id).classList.add('hidden'));
+
+      const sc = document.getElementById('successCard');
+      sc.classList.remove('hidden');
+      document.getElementById('successText').innerHTML = isUpdateMode
+        ? `הרישום של <strong>${fullName(student)}</strong> עודכן בהצלחה.`
+        : `הרישום של <strong>${fullName(student)}</strong> התקבל.<br>
+           ${selectedFriends.length ? `בחרתם ${selectedFriends.length} חבר${selectedFriends.length > 1 ? 'ים' : ''}. תודה!` : 'תודה!'}`;
+
+      currentId = null;
+      selectedFriends = [];
+      isUpdateMode = false;
+    })
+    .catch(err => {
+      msgEl.innerHTML = `<div class="msg msg-error">שגיאה בשליחה: ${err.message}</div>`;
+    });
+}
+
+/* ─────────────────────────────────────────────
+   ADMIN
+───────────────────────────────────────────── */
+function showAdminSection() {
+  document.getElementById('adminSection').classList.remove('hidden');
+  document.getElementById('adminSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function checkPass() {
+  const ADMIN_PASSWORD = "קרן310881"; // ← ניתן לשינוי
+  const entered = document.getElementById('adminPass').value;
+
+  if (entered === ADMIN_PASSWORD) {
+    document.getElementById('adminLoginCard').classList.add('hidden');
+    document.getElementById('adminDashboard').classList.remove('hidden');
+    loadAdminData();
+  } else {
+    document.getElementById('adminPassMsg').innerHTML =
+      '<div class="msg msg-error">סיסמה שגויה</div>';
+  }
+}
+
+document.getElementById('adminPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPass();
+});
+
+function loadAdminData() {
+  // Real-time listener — הטבלה מתעדכנת אוטומטית
+  db.ref('registrations').on('value', snap => {
+    allRegs = snap.val() || {};
+    renderAdminTable();
+  });
+}
+
+function setFilter(cls, btn) {
+  filterClass = cls;
+  document.querySelectorAll('.f-btn:not(.missing-btn)').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAdminTable();
+}
+
+function toggleMissing(btn) {
+  filterMissing = !filterMissing;
+  btn.classList.toggle('active', filterMissing);
+  renderAdminTable();
+}
+
+function renderAdminTable() {
+  const total = Object.keys(STUDENTS).length;
+  const done  = Object.keys(allRegs).length;
+  const miss  = total - done;
+  const pct   = Math.round((done / total) * 100);
+
+  document.getElementById('stTotal').textContent   = total;
+  document.getElementById('stDone').textContent    = done;
+  document.getElementById('stMissing').textContent = miss;
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  // Build rows
+  let rows = Object.entries(STUDENTS).map(([id, s]) => ({
+    id, s, reg: allRegs[id] || null
+  }));
+
+  if (filterClass !== 'all')  rows = rows.filter(r => r.s.class === filterClass);
+  if (filterMissing)          rows = rows.filter(r => !r.reg);
+
+  // Sort: registered first then by lastName
+  rows.sort((a, b) => {
+    if (!filterMissing && a.reg !== b.reg) return a.reg ? -1 : 1;
+    return a.s.lastName.localeCompare(b.s.lastName, 'he');
+  });
+
+  const tbody = document.getElementById('adminTbody');
+  tbody.innerHTML = rows.map((r, i) => {
+    const reg = r.reg;
+    const ff  = reg ? (reg.friends || []) : [];
+    const rowCls = reg ? 'row-done' : 'row-missing';
+    const fc = f => f ? `${f.name} <small>(${classLabel(f.class)})</small>` : '—';
+
+    return `<tr class="${rowCls}">
+      <td>${i + 1}</td>
+      <td><strong>${r.s.firstName} ${r.s.lastName}</strong></td>
+      <td>${classLabel(r.s.class)}</td>
+      <td class="friend-cell">${fc(ff[0])}</td>
+      <td class="friend-cell">${fc(ff[1])}</td>
+      <td class="friend-cell">${fc(ff[2])}</td>
+      <td style="max-width:160px;font-size:.82rem">${reg && reg.notes ? reg.notes : '—'}</td>
+      <td><span class="badge ${reg ? 'badge-done' : 'badge-missing'}">${reg ? '✓ נרשם' : 'חסר'}</span></td>
+      <td style="font-size:.78rem;white-space:nowrap">${fmtDate(reg && reg.lastUpdated)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ─────────────────────────────────────────────
+   EXCEL EXPORT
+───────────────────────────────────────────── */
+function exportExcel() {
+  const header = ['שם פרטי','שם משפחה','כיתה',
+                  'חבר 1','כיתת חבר 1',
+                  'חבר 2','כיתת חבר 2',
+                  'חבר 3','כיתת חבר 3',
+                  'הערות','תאריך רישום','סטטוס'];
+
+  const dataRows = Object.entries(STUDENTS).map(([id, s]) => {
+    const reg = allRegs[id];
+    const ff  = reg ? (reg.friends || []) : [];
+    return [
+      s.firstName, s.lastName, classLabel(s.class),
+      ff[0]?.name || '', ff[0] ? classLabel(ff[0].class) : '',
+      ff[1]?.name || '', ff[1] ? classLabel(ff[1].class) : '',
+      ff[2]?.name || '', ff[2] ? classLabel(ff[2].class) : '',
+      reg?.notes || '',
+      reg ? fmtDate(reg.lastUpdated) : '',
+      reg ? 'נרשם' : 'חסר'
+    ];
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
+  // Column widths
+  ws['!cols'] = [14,14,8,18,10,18,10,18,10,24,16,8].map(w => ({ wch: w }));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'רישומים');
+  XLSX.writeFile(wb, `רישום_שכבת_ז_תשפז_${new Date().toLocaleDateString('he-IL').replace(/\//g,'-')}.xlsx`);
+}
+</script>
+
+</body>
+</html>
