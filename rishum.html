@@ -114,9 +114,71 @@
       padding: 12px 18px;
     }
 
-    /* ═══════════════════════════════════════════
-       LAYOUT
-    ═══════════════════════════════════════════ */
+    .header-deadline {
+      display: inline-block;
+      margin-top: 12px;
+      background: rgba(255,255,255,.22);
+      border: 1.5px solid rgba(255,255,255,.4);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+
+    /* Search field pulse after selecting a friend */
+    @keyframes pulseBorder {
+      0%   { box-shadow: 0 0 0 0   rgba(82,183,136,.6); border-color: var(--green); }
+      50%  { box-shadow: 0 0 0 6px rgba(82,183,136,.15); border-color: var(--green); }
+      100% { box-shadow: 0 0 0 0   rgba(82,183,136,0);   border-color: var(--blue-mid); }
+    }
+    .search-pulse { animation: pulseBorder .7s ease; }
+
+    /* Arrow hint below search after first pick */
+    .search-prompt {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 7px;
+      font-size: 0.83rem;
+      color: var(--green);
+      font-weight: 600;
+      animation: fadeSlide .25s ease;
+    }
+    .search-prompt .arrow { font-size: 1rem; }
+
+    /* Form closed screen */
+    .form-closed-card {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .form-closed-card .closed-icon { font-size: 3rem; margin-bottom: 14px; }
+    .form-closed-card h2 { color: var(--red); font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+    .form-closed-card p  { color: var(--text-mid); font-size: 0.95rem; }
+
+    /* Admin form-status toggle */
+    .form-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+      border: 2px solid;
+      font-weight: 700;
+      font-size: 0.92rem;
+      transition: all .2s;
+    }
+    .form-status-bar.open   { background: var(--green-light);  border-color: var(--green-border); color: #1A6040; }
+    .form-status-bar.closed { background: var(--red-light);    border-color: #F0A0A0;             color: #8B0000; }
+    .form-status-bar .status-label { display: flex; align-items: center; gap: 9px; }
+    .form-status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .open   .form-status-dot { background: var(--green); box-shadow: 0 0 0 3px rgba(82,183,136,.25); }
+    .closed .form-status-dot { background: var(--red);   box-shadow: 0 0 0 3px rgba(224,92,92,.25); }
     .container {
       max-width: 640px;
       margin: 28px auto 0;
@@ -601,10 +663,11 @@
     <h1>רישום לשכבת ז׳ תשפ"ז</h1>
     <div class="header-year">בית ספר אביגור — רמת גן</div>
     <div class="header-desc">
-      לקראת שנת הלימודים הבאה, שכבת ו׳ תעבור ערבוב כיתות.<br>
+      לקראת שנת הלימודים הבאה, שכבת ו׳ תעבור חלוקה מחדש של הכיתות.<br>
       ניתן לציין <strong>עד 3 תלמידים</strong> שתרצו שילדכם יהיה איתם בכיתה החדשה.<br>
       בית הספר ישתדל לשבץ לפחות חבר אחד מהרשימה.
     </div>
+    <div class="header-deadline">⏰ תאריך אחרון לרישום: <strong>12.6</strong></div>
   </div>
 </div>
 
@@ -612,6 +675,15 @@
      REGISTRATION SECTION
 ════════════════════════════════════════════ -->
 <div class="container" id="regSection">
+
+  <!-- Form closed screen -->
+  <div class="card hidden" id="formClosedCard">
+    <div class="form-closed-card">
+      <div class="closed-icon">🔒</div>
+      <h2>הרישום נסגר</h2>
+      <p>תקופת הרישום הסתיימה.<br>לפרטים נוספים ניתן לפנות לבית הספר.</p>
+    </div>
+  </div>
 
   <!-- Step 1: ID Lookup -->
   <div class="card" id="cardId">
@@ -666,6 +738,9 @@
                onkeydown="onSearchKey(event)"
                autocomplete="off">
         <div class="ac-dropdown hidden" id="acDropdown"></div>
+      </div>
+      <div class="search-prompt hidden" id="searchPrompt">
+        <span class="arrow">↑</span> הקלידו שם לבחירת חבר/ה נוסף/ת
       </div>
     </div>
 
@@ -731,6 +806,16 @@
     <div class="admin-header">
       <h2>📋 לוח רישומים — שכבת ז׳ תשפ"ז</h2>
       <button class="btn btn-ghost btn-sm" onclick="location.reload()">⟵ חזרה לטופס</button>
+    </div>
+
+    <!-- Form open/close toggle -->
+    <div class="form-status-bar open" id="formStatusBar">
+      <div class="status-label">
+        <span class="form-status-dot"></span>
+        <span id="formStatusText">הטופס פתוח — הורים יכולים להירשם</span>
+      </div>
+      <button class="btn btn-sm" id="formToggleBtn" onclick="toggleFormOpen()"
+              style="background:#E05C5C; color:#fff; border-color:#E05C5C;">סגור את הטופס</button>
     </div>
 
     <!-- Stats -->
@@ -828,6 +913,15 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
+// Check if form is open on page load
+db.ref('settings/formOpen').once('value').then(snap => {
+  const isOpen = snap.val() !== false; // default open if null
+  if (!isOpen) {
+    document.getElementById('formClosedCard').classList.remove('hidden');
+    document.getElementById('cardId').classList.add('hidden');
+  }
+});
 
 /* ─────────────────────────────────────────────
    STUDENT DATA — 88 תלמידים
@@ -1057,6 +1151,16 @@ function selectFriend(id) {
   document.getElementById('friendSearch').value = '';
   document.getElementById('acDropdown').classList.add('hidden');
   renderFriends();
+
+  // UX: focus + pulse the search field so user knows to keep typing
+  if (selectedFriends.length < 3) {
+    const inp = document.getElementById('friendSearch');
+    inp.focus();
+    inp.classList.remove('search-pulse');
+    void inp.offsetWidth; // force reflow to restart animation
+    inp.classList.add('search-pulse');
+    setTimeout(() => inp.classList.remove('search-pulse'), 800);
+  }
 }
 
 function removeFriend(id) {
@@ -1065,9 +1169,10 @@ function removeFriend(id) {
 }
 
 function renderFriends() {
-  const list = document.getElementById('friendsList');
-  const hint = document.getElementById('friendsHint');
-  const inp  = document.getElementById('friendSearch');
+  const list   = document.getElementById('friendsList');
+  const hint   = document.getElementById('friendsHint');
+  const inp    = document.getElementById('friendSearch');
+  const prompt = document.getElementById('searchPrompt');
 
   list.innerHTML = selectedFriends.map((f, i) => `
     <div class="friend-chip">
@@ -1084,13 +1189,20 @@ function renderFriends() {
 
   const rem = 3 - selectedFriends.length;
   if (rem === 0) {
-    hint.textContent   = 'בחרתם 3 חברים — המקסימום האפשרי';
-    inp.disabled       = true;
-    inp.placeholder    = 'הגעתם למקסימום';
+    hint.textContent = 'בחרתם 3 חברים — המקסימום האפשרי ✓';
+    inp.disabled     = true;
+    inp.placeholder  = 'הגעתם למקסימום';
+    prompt.classList.add('hidden');
+  } else if (selectedFriends.length > 0) {
+    hint.textContent = `בחרתם ${selectedFriends.length} חבר${selectedFriends.length > 1 ? 'ים' : ''} — ניתן לבחור עוד ${rem}`;
+    inp.disabled     = false;
+    inp.placeholder  = `הוסיפו חבר/ה ${selectedFriends.length + 1}...`;
+    prompt.classList.remove('hidden');
   } else {
-    hint.textContent   = `ניתן לבחור עוד ${rem} חבר${rem === 1 ? '' : 'ים'}`;
-    inp.disabled       = false;
-    inp.placeholder    = 'התחילו להקליד שם...';
+    hint.textContent = 'ניתן לבחור עד 3 חברים';
+    inp.disabled     = false;
+    inp.placeholder  = 'התחילו להקליד שם...';
+    prompt.classList.add('hidden');
   }
 }
 
@@ -1180,10 +1292,38 @@ document.getElementById('adminPass').addEventListener('keydown', e => {
 });
 
 function loadAdminData() {
-  // Real-time listener — הטבלה מתעדכנת אוטומטית
+  // Listen to form-open state
+  db.ref('settings/formOpen').on('value', snap => {
+    const isOpen = snap.val() !== false; // default open if null
+    updateFormStatusUI(isOpen);
+  });
+  // Real-time registrations listener
   db.ref('registrations').on('value', snap => {
     allRegs = snap.val() || {};
     renderAdminTable();
+  });
+}
+
+function updateFormStatusUI(isOpen) {
+  const bar     = document.getElementById('formStatusBar');
+  const textEl  = document.getElementById('formStatusText');
+  const btn     = document.getElementById('formToggleBtn');
+  bar.className = 'form-status-bar ' + (isOpen ? 'open' : 'closed');
+  textEl.textContent = isOpen
+    ? 'הטופס פתוח — הורים יכולים להירשם'
+    : 'הטופס סגור — הורים אינם יכולים להירשם';
+  btn.textContent = isOpen ? 'סגור את הטופס' : 'פתח את הטופס';
+  btn.style.background    = isOpen ? '#E05C5C' : '#52B788';
+  btn.style.borderColor   = isOpen ? '#E05C5C' : '#52B788';
+}
+
+function toggleFormOpen() {
+  db.ref('settings/formOpen').once('value').then(snap => {
+    const current = snap.val() !== false;
+    const action  = current ? 'לסגור' : 'לפתוח';
+    if (confirm(`האם לאשר ${action} את הטופס?`)) {
+      db.ref('settings/formOpen').set(!current);
+    }
   });
 }
 
